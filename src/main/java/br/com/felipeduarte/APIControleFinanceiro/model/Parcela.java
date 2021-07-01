@@ -3,15 +3,31 @@ package br.com.felipeduarte.APIControleFinanceiro.model;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "parcela")
 public class Parcela implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	
 	private Integer numero;
 	private LocalDate vencimento;
 	private Boolean pago;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_parcelado")
 	private Parcelado parcelado;
 	
 	public Parcela() {

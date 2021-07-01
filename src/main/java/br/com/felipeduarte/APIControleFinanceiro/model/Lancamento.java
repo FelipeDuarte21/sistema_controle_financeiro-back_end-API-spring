@@ -3,19 +3,41 @@ package br.com.felipeduarte.APIControleFinanceiro.model;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "lancamento")
 public class Lancamento implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	
 	private String nome;
 	private String descricao;
 	private Double valor;
+	
+	@Column(name = "data_cadastro")
 	private LocalDate dataCadastro;
+	
 	private Boolean sugestao;
 	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "id_balanco")
 	private Balanco balanco;
 	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "id_tipo")
 	private TipoLancamento tipo;
 	
 	public Lancamento() {

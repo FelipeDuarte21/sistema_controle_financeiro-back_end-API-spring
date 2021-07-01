@@ -5,17 +5,35 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "parcelado")
 public class Parcelado implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private String nome;
 	private String descricao;
 	private Double valor;
+	
+	@Column(name = "data_cadastro")
 	private LocalDate dataCadastro;
+	
 	private Boolean pago;
 
+	@OneToMany(mappedBy = "parcelado", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
 	private List<Parcela> parcelas = new ArrayList<>();
 	
 	public Parcelado() {
