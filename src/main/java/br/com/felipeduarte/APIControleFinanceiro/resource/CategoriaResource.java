@@ -55,7 +55,14 @@ public class CategoriaResource {
 	
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
-		return null;
+		
+		boolean resp = this.service.excluir(id);
+		
+		if(resp == false) {
+			throw new ObjectBadRequestException("Erro! Verifique o id informado!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
 	@GetMapping

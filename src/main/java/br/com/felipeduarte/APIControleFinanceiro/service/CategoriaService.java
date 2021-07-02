@@ -60,8 +60,16 @@ public class CategoriaService {
 		return c;
 	}
 	
-	public boolean excluir(Integer id) {
-		return false;
+	public boolean excluir(Long id) {
+		
+		Optional<Categoria> cat = this.repository.findById(id);
+		
+		if(cat.isEmpty()) {
+			return false;
+		}
+		
+		this.repository.delete(cat.get());
+		return true;
 	}
 	
 	public Page<Categoria> listar(Integer page, Integer size, Integer order){
