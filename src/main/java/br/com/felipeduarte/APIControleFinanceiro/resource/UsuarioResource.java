@@ -43,7 +43,14 @@ public class UsuarioResource {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Usuario> buscarPorId(@PathVariable(name = "id") Long id){
-		return null;
+		
+		Usuario usuario = this.service.buscarPorId(id);
+		
+		if(usuario == null){
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(usuario);
 	}
 	
 	@GetMapping

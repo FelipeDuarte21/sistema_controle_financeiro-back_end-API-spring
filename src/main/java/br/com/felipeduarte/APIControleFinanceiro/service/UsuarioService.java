@@ -1,5 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +30,15 @@ public class UsuarioService {
 	}
 	
 	public Usuario buscarPorId(Long id) {
-		return null;
+		
+		Optional<Usuario> usuario =  this.repository.findById(id);
+		
+		if(usuario.isEmpty()) {
+			return null;
+		}
+		
+		return usuario.get();
+		
 	}
 	
 	public Page<Usuario> listar(Integer page, Integer size, Integer order){
