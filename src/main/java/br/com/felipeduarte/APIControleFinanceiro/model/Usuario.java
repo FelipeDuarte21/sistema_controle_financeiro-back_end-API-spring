@@ -15,6 +15,8 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
+
 @Entity
 @Table(name = "usuario")
 public class Usuario implements Serializable{
@@ -29,6 +31,7 @@ public class Usuario implements Serializable{
 	
 	private String email;
 	
+	@JsonIgnore
 	private String senha;
 	
 	@JsonIgnore
@@ -102,6 +105,14 @@ public class Usuario implements Serializable{
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+	
+	public static Usuario converteParaUsuario(UsuarioSalvarDTO usuario) {
+		Usuario usu = new Usuario();
+		usu.setNome(usuario.getNome());
+		usu.setEmail(usuario.getEmail());
+		usu.setSenha(usuario.getSenha());
+		return usu;
 	}
 	
 }

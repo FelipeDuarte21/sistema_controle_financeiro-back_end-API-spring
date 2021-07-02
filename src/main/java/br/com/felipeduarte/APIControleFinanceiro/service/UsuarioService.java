@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 
 @Service
@@ -17,8 +18,18 @@ public class UsuarioService {
 	@Autowired
 	private UsuarioRepository repository;
 
-	public Usuario salvar(Usuario usuario) {
-		return null;
+	public Usuario salvar(UsuarioSalvarDTO usuario) {
+		
+		Optional<Usuario> u = this.repository.findByEmail(usuario.getEmail());
+		
+		if(u.isPresent()) {
+			return null;
+		}
+		
+		Usuario usu = Usuario.converteParaUsuario(usuario);
+		usu = this.repository.save(usu);
+		return usu;
+		
 	}
 	
 	public Usuario atualizar(Usuario usuario) {
