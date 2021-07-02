@@ -56,7 +56,14 @@ public class UsuarioResource {
 	
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
-		return null;
+		
+		boolean resp = this.service.excluir(id);
+		
+		if(resp == false) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
 	@GetMapping("/{id}")

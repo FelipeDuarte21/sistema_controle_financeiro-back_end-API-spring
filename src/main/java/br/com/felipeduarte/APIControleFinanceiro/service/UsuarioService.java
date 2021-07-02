@@ -65,7 +65,15 @@ public class UsuarioService {
 	}
 	
 	public boolean excluir(Long id) {
-		return false;
+		
+		Optional<Usuario> usu = this.repository.findById(id);
+		
+		if(usu.isEmpty()) {
+			return false;
+		}
+		
+		this.repository.delete(usu.get());
+		return true;
 	}
 	
 	public Usuario buscarPorId(Long id) {
