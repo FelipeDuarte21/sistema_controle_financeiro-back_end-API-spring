@@ -2,6 +2,7 @@ package br.com.felipeduarte.APIControleFinanceiro.resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,7 +52,11 @@ public class UsuarioResource {
 		@RequestParam(defaultValue = "6") Integer size,
 		@RequestParam(defaultValue = "1") Integer order
 		){
-		return null;
+		
+		Page<Usuario> usuarios = this.service.listar(page, size, order);
+		
+		return ResponseEntity.status(HttpStatus.OK).body(usuarios);
+		
 	}
 	
 }
