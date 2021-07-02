@@ -11,6 +11,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 @Repository
 public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
 	
+	public Categoria findByNome(String nome);
 	public Page<Categoria> findByUsuario(Usuario usuario, Pageable pageable);
 	
 }

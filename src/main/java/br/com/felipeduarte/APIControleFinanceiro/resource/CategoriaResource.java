@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaDTO;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.service.CategoriaService;
 
 @RestController
@@ -29,7 +30,15 @@ public class CategoriaResource {
 	
 	@PostMapping
 	public ResponseEntity<Categoria> salvar(@RequestBody @Valid CategoriaDTO categoria){
-		return null;
+		
+		Categoria cat = this.service.salvar(categoria);
+		
+		if(cat == null) {
+			throw new ObjectBadRequestException("Categória já cadastrada!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(cat);
+		
 	}
 	
 	@PutMapping

@@ -21,7 +21,22 @@ public class CategoriaService {
 	private UsuarioService usuarioService;
 	
 	public Categoria salvar(CategoriaDTO categoria) {
-		return null;
+		
+		Categoria cat = this.repository.findByNome(categoria.getNome());
+		
+		if(cat != null) {
+			return null;
+		}
+		
+		cat = Categoria.converteParaCategoria(categoria);
+		
+		//Deverá trocar para o usuário logado
+		Usuario usuario = this.usuarioService.buscarPorId(1L);
+		cat.setUsuario(usuario);
+		
+		cat = this.repository.save(cat);
+		
+		return cat;
 	}
 	
 	public Categoria atualizar(CategoriaDTO  categoria) {
