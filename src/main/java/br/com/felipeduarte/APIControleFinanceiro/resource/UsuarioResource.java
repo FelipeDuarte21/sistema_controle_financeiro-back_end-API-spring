@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
 import br.com.felipeduarte.APIControleFinanceiro.service.UsuarioService;
 
 @CrossOrigin
@@ -36,19 +38,20 @@ public class UsuarioResource {
 		Usuario usu = this.service.salvar(usuario);
 		
 		if(usu == null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			throw new ObjectBadRequestException("Usuário Já Cadastrado!");
 		}
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(usu);
 	}
 	
 	@PutMapping
-	public ResponseEntity<Usuario> update(@RequestBody UsuarioAtualizarDTO usuario){
+	public ResponseEntity<Usuario> update(@RequestBody @Valid UsuarioAtualizarDTO usuario){
 		
 		Usuario usu = this.service.atualizar(usuario);
 		
 		if(usu == null) {	
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();			
+			throw new ObjectBadRequestException("Erro! Verifique o id informado, "
+					+ "verifique se o usuario está cadastrado e verifique os dados informados!");		
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).body(usu);
@@ -60,7 +63,7 @@ public class UsuarioResource {
 		boolean resp = this.service.excluir(id);
 		
 		if(resp == false) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			throw new ObjectBadRequestException("Erro! Usuário não cadastrado!");
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).build();
@@ -72,7 +75,7 @@ public class UsuarioResource {
 		Usuario usuario = this.service.buscarPorId(id);
 		
 		if(usuario == null){
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+			throw new ObjectNotContentException("Usuário não encontrado para id informado!");
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).body(usuario);
