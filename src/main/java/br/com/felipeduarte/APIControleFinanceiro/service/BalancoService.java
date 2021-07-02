@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
+import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.repository.BalancoRepository;
 
 @Service
@@ -12,12 +13,34 @@ public class BalancoService {
 	@Autowired
 	private BalancoRepository repository;
 	
+	@Autowired
+	private CategoriaService categoriaService;
+	
 	public Balanco recuperarAtual(Long idCategoria) {
-		return null;
+		
+		Categoria categoria = this.categoriaService.buscarPorId(idCategoria);
+		
+		if(categoria == null) {
+			return null;
+		}
+		
+		Balanco balanco = this.repository.findByCategoriaAndFechado(categoria, false);
+		
+		return balanco;
 	}
 	
-	public Balanco recuperarPorData(Integer mes, Integer ano, Long idCategoria) {
-		return null;
+	public Balanco recuperarPorData(Long idCategoria, Integer mes, Integer ano) {
+		
+		Categoria categoria = this.categoriaService.buscarPorId(idCategoria);
+		
+		if(categoria == null) {
+			return null;
+		}
+		
+		Balanco balanco = this.repository.findByCategoriaAndMesAndAno(categoria, mes, ano);
+		
+		return balanco;
+		
 	}
 	
 }

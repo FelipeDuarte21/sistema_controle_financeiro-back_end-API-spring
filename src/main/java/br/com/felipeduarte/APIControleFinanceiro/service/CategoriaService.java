@@ -72,6 +72,17 @@ public class CategoriaService {
 		return true;
 	}
 	
+	public Categoria buscarPorId(Long id) {
+		
+		Optional<Categoria> categoria = this.repository.findById(id);
+		
+		if(categoria.isEmpty()) {
+			return null;
+		}
+		
+		return categoria.get();
+	}
+	
 	public Page<Categoria> listar(Integer page, Integer size, Integer order){
 		Direction d = Direction.ASC;
 		
