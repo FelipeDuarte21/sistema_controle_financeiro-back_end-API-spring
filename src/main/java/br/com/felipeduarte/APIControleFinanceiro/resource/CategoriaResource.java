@@ -43,7 +43,14 @@ public class CategoriaResource {
 	
 	@PutMapping
 	public ResponseEntity<Categoria> atualizar(@RequestBody @Valid CategoriaDTO categoria){
-		return null;
+		
+		Categoria cat = this.service.atualizar(categoria);
+		
+		if(cat == null) {
+			throw new ObjectBadRequestException("Erro! Verifique o id informado!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(cat);
 	}
 	
 	@DeleteMapping("/{id}")

@@ -1,5 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,8 +41,23 @@ public class CategoriaService {
 		return cat;
 	}
 	
-	public Categoria atualizar(CategoriaDTO  categoria) {
-		return null;
+	public Categoria atualizar(CategoriaDTO categoria) {
+		
+		if(categoria.getId() == null) {
+			return null;
+		}
+		
+		Optional<Categoria> cat = this.repository.findById(categoria.getId());
+		
+		if(cat.isEmpty()) {
+			return null;
+		}
+		
+		Categoria c = Categoria.converteParaCategoria(categoria);
+		c.setUsuario(cat.get().getUsuario());
+		
+		c = this.repository.save(c);
+		return c;
 	}
 	
 	public boolean excluir(Integer id) {

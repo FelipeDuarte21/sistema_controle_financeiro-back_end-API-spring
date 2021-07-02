@@ -71,11 +71,11 @@ public class Categoria implements Serializable {
 		this.descricao = descricao;
 	}
 
-	public LocalDate getDataCriacao() {
+	public LocalDate getDataCadastro() {
 		return dataCadastro;
 	}
 
-	public void setDataCriacao(LocalDate dataCadastro) {
+	public void setDataCadastro(LocalDate dataCadastro) {
 		this.dataCadastro = dataCadastro;
 	}
 
@@ -125,7 +125,7 @@ public class Categoria implements Serializable {
 		c.setId(categoria.getId());
 		c.setNome(categoria.getNome());
 		c.setDescricao(categoria.getDescricao());
-		c.setDataCriacao(categoria.getDataCadastro());
+		c.setDataCadastro(categoria.getDataCadastro());
 		return c;
 	}
 
