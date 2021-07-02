@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 
@@ -32,8 +33,35 @@ public class UsuarioService {
 		
 	}
 	
-	public Usuario atualizar(Usuario usuario) {
-		return null;
+	public Usuario atualizar(UsuarioAtualizarDTO usuario) {
+		
+		if(usuario.getId() == null || usuario.getId() == 0L) {
+			return null;
+		}
+		
+		Optional<Usuario> u1 = this.repository.findById(usuario.getId());
+		
+		if(u1.isEmpty()) {
+			return null;
+		}
+		
+		if(!usuario.getEmail().equals(u1.get().getEmail())) {
+			
+			Optional<Usuario> u2 = this.repository.findByEmail(usuario.getEmail());
+			
+			if(u2.isPresent()) {
+				return null;
+			}
+			
+		}
+		
+		Usuario usu = Usuario.converteParaUsuario(usuario);
+		usu.setSenha(u1.get().getSenha());
+		
+		usu = this.repository.save(usu);
+		
+		return usu;
+		
 	}
 	
 	public boolean excluir(Long id) {

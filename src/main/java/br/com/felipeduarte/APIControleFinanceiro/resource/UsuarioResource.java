@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.service.UsuarioService;
 
@@ -38,12 +39,19 @@ public class UsuarioResource {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 		
-		return ResponseEntity.status(HttpStatus.OK).body(usu);
+		return ResponseEntity.status(HttpStatus.CREATED).body(usu);
 	}
 	
 	@PutMapping
-	public ResponseEntity<Usuario> update(@RequestBody Usuario usuario){
-		return null;
+	public ResponseEntity<Usuario> update(@RequestBody UsuarioAtualizarDTO usuario){
+		
+		Usuario usu = this.service.atualizar(usuario);
+		
+		if(usu == null) {	
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();			
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(usu);
 	}
 	
 	@DeleteMapping("/{id}")

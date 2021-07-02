@@ -15,6 +15,7 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 
 @Entity
@@ -112,6 +113,14 @@ public class Usuario implements Serializable{
 		usu.setNome(usuario.getNome());
 		usu.setEmail(usuario.getEmail());
 		usu.setSenha(usuario.getSenha());
+		return usu;
+	}
+	
+	public static Usuario converteParaUsuario(UsuarioAtualizarDTO usuario) {
+		Usuario usu = new Usuario();
+		usu.setId(usuario.getId());
+		usu.setNome(usuario.getNome());
+		usu.setEmail(usuario.getEmail());
 		return usu;
 	}
 	
