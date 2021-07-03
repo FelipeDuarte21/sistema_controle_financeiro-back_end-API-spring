@@ -29,12 +29,27 @@ public class LancamentoResource {
 	
 	@PostMapping
 	public ResponseEntity<Lancamento> salvar(@RequestBody @Valid LancamentoDTO lancamento){
-		return null;
+		
+		Lancamento lan = this.service.salvar(lancamento);
+		
+		if(lan == null) {
+			throw new ObjectBadRequestException("Erro! Verifique as informações fornecidas!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(lan);
 	}
 	
 	@PutMapping
 	public ResponseEntity<Lancamento> atualizar(@RequestBody @Valid LancamentoDTO lancamento){
-		return null;
+		
+		Lancamento lan = this.service.alterar(lancamento);
+		
+		if(lan == null) {
+			throw new ObjectBadRequestException("Erro! Verifique as informações fornecidas!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(lan);
+		
 	}
 	
 	@DeleteMapping("/{id}")

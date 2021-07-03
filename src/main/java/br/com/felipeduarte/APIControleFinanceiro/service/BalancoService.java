@@ -1,5 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +43,17 @@ public class BalancoService {
 		
 		return balanco;
 		
+	}
+	
+	public Balanco buscarPorId(Long id) {
+		
+		Optional<Balanco> balanco = this.repository.findById(id);
+		
+		if(balanco.isEmpty()) {
+			return null;
+		}
+		
+		return balanco.get();
 	}
 	
 }

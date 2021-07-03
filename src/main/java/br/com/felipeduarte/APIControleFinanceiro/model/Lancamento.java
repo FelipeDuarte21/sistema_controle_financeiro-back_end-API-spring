@@ -15,6 +15,8 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
+
 @Entity
 @Table(name = "lancamento")
 public class Lancamento implements Serializable{
@@ -134,6 +136,17 @@ public class Lancamento implements Serializable{
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+	
+	public static Lancamento converteParaLancamento(LancamentoDTO lancamento) {
+		Lancamento lan = new Lancamento();
+		lan.setId(lancamento.getId());
+		lan.setNome(lancamento.getNome());
+		lan.setDescricao(lancamento.getDescricao());
+		lan.setValor(lancamento.getValor());
+		lan.setData(lancamento.getDataCadastro());
+		lan.setSugestao(lancamento.getSugestao());
+		return lan;
 	}
 
 }

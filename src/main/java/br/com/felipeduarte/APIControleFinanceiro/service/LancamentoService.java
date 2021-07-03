@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.LancamentoRepository;
@@ -15,12 +16,36 @@ public class LancamentoService {
 	@Autowired
 	private LancamentoRepository repository;
 	
+	@Autowired
+	private BalancoService balancoService;
+	
+	
 	public Lancamento salvar(LancamentoDTO lancamento) {
-		return null;
+		
+		Balanco balanco = this.balancoService.buscarPorId(lancamento.getBalanco());
+		if(balanco == null) {
+			return null;
+		}
+		
+		//Tratar a questão do tipo
+		
+		Lancamento lan = Lancamento.converteParaLancamento(lancamento);
+		
+		lan.setTipo(null); //Tratar isso aqui
+		lan.setBalanco(balanco);
+		
+		lan = this.repository.save(lan);
+		return lan;
 	}
 	
 	public Lancamento alterar(LancamentoDTO lancamento) {
-		return null;
+		
+		if(lancamento.getId() == null || lancamento.getId() == 0) {
+			return null;
+		}
+		
+		Lancamento lan = this.salvar(lancamento);
+		return lan;
 	}
 	
 	public boolean excluir(Long id) {
