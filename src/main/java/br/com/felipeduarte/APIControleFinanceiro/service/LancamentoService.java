@@ -24,7 +24,16 @@ public class LancamentoService {
 	}
 	
 	public boolean excluir(Long id) {
-		return false;
+		
+		Lancamento lancamento = this.buscarPorId(id);
+		
+		if(lancamento == null) {
+			return false;
+		}
+		
+		this.repository.delete(lancamento);
+		
+		return true;
 	}
 	
 	public Lancamento buscarPorId(Long id) {
