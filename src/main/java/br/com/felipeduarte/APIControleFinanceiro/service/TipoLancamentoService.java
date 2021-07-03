@@ -15,7 +15,14 @@ public class TipoLancamentoService {
 	private TipoLancamentoRepository repository;
 	
 	public List<TipoLancamento> listar(){
-		return null;
+		
+		List<TipoLancamento> tipos = this.repository.findAll();
+		
+		if(tipos.isEmpty() || tipos == null) {
+			return null;
+		}
+		
+		return tipos;
 	}
 	
 }
