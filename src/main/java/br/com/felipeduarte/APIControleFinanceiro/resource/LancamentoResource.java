@@ -3,6 +3,7 @@ package br.com.felipeduarte.APIControleFinanceiro.resource;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
 import br.com.felipeduarte.APIControleFinanceiro.service.LancamentoService;
 
 @RestController
@@ -41,7 +44,15 @@ public class LancamentoResource {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Lancamento> buscarPorId(@PathVariable Long id){
-		return null;
+		
+		Lancamento lancamento = this.service.buscarPorId(id);
+		
+		if(lancamento == null) {
+			throw new ObjectNotContentException("Erro! Lançamento não encontrado!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(lancamento);
+		
 	}
 	
 }

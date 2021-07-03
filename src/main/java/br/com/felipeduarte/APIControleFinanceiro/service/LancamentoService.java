@@ -1,5 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +28,14 @@ public class LancamentoService {
 	}
 	
 	public Lancamento buscarPorId(Long id) {
-		return null;
+		
+		Optional<Lancamento> lancamento = this.repository.findById(id);
+		
+		if(lancamento.isEmpty()) {
+			return null;
+		}
+		
+		return lancamento.get();
 	}
 	
 }
