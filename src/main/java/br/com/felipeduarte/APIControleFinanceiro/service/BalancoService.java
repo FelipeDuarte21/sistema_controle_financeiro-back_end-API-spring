@@ -1,5 +1,6 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
+import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
+import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
 import br.com.felipeduarte.APIControleFinanceiro.repository.BalancoRepository;
 
 @Service
@@ -54,6 +57,61 @@ public class BalancoService {
 		}
 		
 		return balanco.get();
+	}
+	
+	public void cadastrar(Categoria categoria) {
+		
+		LocalDate agora = LocalDate.now();
+		
+		LocalDate dataAnterior = agora.minusMonths(1);
+		Balanco balancoAnterior = this.repository.findByCategoriaAndMesAndAno(categoria, 
+				dataAnterior.getMonthValue(), dataAnterior.getYear());
+		double saldoAnterior = 0.0;
+		if(balancoAnterior != null) {
+			saldoAnterior = balancoAnterior.getSaldoAtual();
+		}
+		
+		Balanco balanco = new Balanco();
+		balanco.setId(null);
+		balanco.setMes(agora.getMonthValue());
+		balanco.setAno(agora.getYear());
+		balanco.setSaldoAnterior(0.0);
+		balanco.setSaldoAtual(saldoAnterior);
+		balanco.setFechado(false);
+		balanco.setCategoria(categoria);
+		
+		balanco = this.repository.save(balanco);
+		
+	}
+	
+	public void atualizarSaldo(Balanco balanco) {
+		
+		Balanco b = this.buscarPorId(balanco.getId());
+		
+		if(b != null) {
+			
+			double saldoAnterior = balanco.getSaldoAnterior();
+			double proventos = 0.0;
+			double despesas = 0.0;
+			
+			for(Lancamento l: b.getLancamentos()) {
+				
+				if(l.getTipo().getValor() == TipoLancamentoEnum.PROVENTO.getValor()) {
+					proventos += l.getValor();
+				}
+				
+				if(l.getTipo().getValor() == TipoLancamentoEnum.DESPESA.getValor()) {
+					despesas += l.getValor();
+				}
+				
+			}
+			
+			b.setSaldoAtual(saldoAnterior + proventos - despesas); 
+			
+			this.repository.save(b);
+			
+		}
+		
 	}
 	
 }

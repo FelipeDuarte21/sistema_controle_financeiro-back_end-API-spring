@@ -7,5 +7,5 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 
 @Repository
 public interface LancamentoRepository extends JpaRepository<Lancamento, Long>{
-
+	
 }

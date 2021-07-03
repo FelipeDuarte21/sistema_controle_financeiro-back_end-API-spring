@@ -22,6 +22,9 @@ public class CategoriaService {
 	@Autowired
 	private UsuarioService usuarioService;
 	
+	@Autowired
+	private BalancoService balancoService;
+	
 	public Categoria salvar(CategoriaDTO categoria) {
 		
 		Categoria cat = this.repository.findByNome(categoria.getNome());
@@ -37,6 +40,8 @@ public class CategoriaService {
 		cat.setUsuario(usuario);
 		
 		cat = this.repository.save(cat);
+		
+		this.balancoService.cadastrar(cat);
 		
 		return cat;
 	}

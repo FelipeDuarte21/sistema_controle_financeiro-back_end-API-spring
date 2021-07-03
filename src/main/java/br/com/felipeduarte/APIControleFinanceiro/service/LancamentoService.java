@@ -42,6 +42,9 @@ public class LancamentoService {
 		lan.setBalanco(balanco);
 		
 		lan = this.repository.save(lan);
+		
+		this.balancoService.atualizarSaldo(lan.getBalanco());
+		
 		return lan;
 	}
 	
@@ -51,7 +54,13 @@ public class LancamentoService {
 			return null;
 		}
 		
-		Lancamento lan = this.salvar(lancamento);
+		Lancamento lan = this.buscarPorId(lancamento.getId());
+		if(lan == null) {
+			return null;
+		}
+		
+		lan = this.salvar(lancamento);
+		
 		return lan;
 	}
 	
@@ -63,7 +72,11 @@ public class LancamentoService {
 			return false;
 		}
 		
+		Balanco balanco = lancamento.getBalanco();
+		
 		this.repository.delete(lancamento);
+		
+		this.balancoService.atualizarSaldo(balanco);
 		
 		return true;
 	}
