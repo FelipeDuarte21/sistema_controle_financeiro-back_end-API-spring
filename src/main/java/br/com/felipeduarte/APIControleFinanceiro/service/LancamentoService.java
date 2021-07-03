@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
+import br.com.felipeduarte.APIControleFinanceiro.model.TipoLancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.LancamentoRepository;
 
@@ -19,6 +20,9 @@ public class LancamentoService {
 	@Autowired
 	private BalancoService balancoService;
 	
+	@Autowired
+	private TipoLancamentoService tipoLancamentoService;
+	
 	
 	public Lancamento salvar(LancamentoDTO lancamento) {
 		
@@ -27,11 +31,14 @@ public class LancamentoService {
 			return null;
 		}
 		
-		//Tratar a questão do tipo
+		TipoLancamento tipoLancamento = this.tipoLancamentoService.buscarPorValor(lancamento.getTipo());
+		if(tipoLancamento == null) {
+			return null;
+		}
 		
 		Lancamento lan = Lancamento.converteParaLancamento(lancamento);
 		
-		lan.setTipo(null); //Tratar isso aqui
+		lan.setTipo(tipoLancamento);
 		lan.setBalanco(balanco);
 		
 		lan = this.repository.save(lan);

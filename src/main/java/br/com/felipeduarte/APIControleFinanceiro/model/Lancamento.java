@@ -81,11 +81,11 @@ public class Lancamento implements Serializable{
 		this.valor = valor;
 	}
 
-	public LocalDate getData() {
+	public LocalDate getDataCadastro() {
 		return dataCadastro;
 	}
 
-	public void setData(LocalDate dataCadastro) {
+	public void setDataCadastro(LocalDate dataCadastro) {
 		this.dataCadastro = dataCadastro;
 	}
 
@@ -144,7 +144,7 @@ public class Lancamento implements Serializable{
 		lan.setNome(lancamento.getNome());
 		lan.setDescricao(lancamento.getDescricao());
 		lan.setValor(lancamento.getValor());
-		lan.setData(lancamento.getDataCadastro());
+		lan.setDataCadastro(lancamento.getDataCadastro());
 		lan.setSugestao(lancamento.getSugestao());
 		return lan;
 	}

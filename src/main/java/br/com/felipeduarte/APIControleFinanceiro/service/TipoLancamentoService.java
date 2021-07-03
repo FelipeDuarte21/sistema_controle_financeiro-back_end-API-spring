@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,17 @@ public class TipoLancamentoService {
 		}
 		
 		return tipos;
+	}
+	
+	public TipoLancamento buscarPorValor(Integer valor) {
+		
+		Optional<TipoLancamento> tl = this.repository.findByValor(valor);
+		
+		if(tl.isEmpty()) {
+			return null;
+		}
+		
+		return tl.get();
 	}
 	
 }
