@@ -1,5 +1,6 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ public class CategoriaService {
 		//Deverá trocar para o usuário logado
 		Usuario usuario = this.usuarioService.buscarPorId(1L);
 		cat.setUsuario(usuario);
+		
+		//Tratando a data
+		cat.setDataCadastro(LocalDate.now());
 		
 		cat = this.repository.save(cat);
 		

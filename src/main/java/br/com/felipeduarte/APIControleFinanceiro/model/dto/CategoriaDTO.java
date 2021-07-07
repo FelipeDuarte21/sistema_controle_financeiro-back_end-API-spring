@@ -16,7 +16,6 @@ public class CategoriaDTO {
 	
 	private String descricao;
 	
-	@NotNull(message = "Informe o campo data cadastro")
 	private LocalDate dataCadastro;
 
 	public Long getId() {
