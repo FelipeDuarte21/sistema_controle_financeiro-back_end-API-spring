@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
 import br.com.felipeduarte.APIControleFinanceiro.service.CategoriaService;
 
 @CrossOrigin
@@ -65,6 +66,18 @@ public class CategoriaResource {
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).build();
+	}
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<Categoria> buscarPorId(@PathVariable(name = "id") Long id){
+		
+		Categoria categoria = this.service.buscarPorId(id);
+		
+		if(categoria == null) {
+			throw new ObjectNotContentException("Erro! Categoria não encontrada!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(categoria);
 	}
 	
 	@GetMapping
