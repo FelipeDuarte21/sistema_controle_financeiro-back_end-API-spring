@@ -1,5 +1,6 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,11 @@ public class LancamentoService {
 		
 		lan.setTipo(tipoLancamento);
 		lan.setBalanco(balanco);
+		
+		//Tratando a data
+		if(lan.getDataCadastro() == null) {
+			lan.setDataCadastro(LocalDate.now());
+		}
 		
 		lan = this.repository.save(lan);
 		

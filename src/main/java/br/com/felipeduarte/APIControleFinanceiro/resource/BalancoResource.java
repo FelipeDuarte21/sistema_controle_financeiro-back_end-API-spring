@@ -3,6 +3,7 @@ package br.com.felipeduarte.APIControleFinanceiro.resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,6 +13,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
 import br.com.felipeduarte.APIControleFinanceiro.service.BalancoService;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/balanco")
 public class BalancoResource {

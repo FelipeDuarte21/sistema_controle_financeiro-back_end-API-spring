@@ -19,7 +19,6 @@ public class LancamentoDTO {
 	@NotNull(message = "Informa o campo valor")
 	private Double valor;
 	
-	@NotNull(message = "Infome o campo data de cadastro")
 	private LocalDate dataCadastro;
 	
 	private Boolean sugestao;
