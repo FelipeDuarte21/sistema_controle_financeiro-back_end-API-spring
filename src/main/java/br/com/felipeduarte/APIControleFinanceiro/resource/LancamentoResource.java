@@ -3,6 +3,7 @@ package br.com.felipeduarte.APIControleFinanceiro.resource;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
@@ -74,6 +76,24 @@ public class LancamentoResource {
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).body(lancamento);
+		
+	}
+	
+	@GetMapping("/balanco")
+	public ResponseEntity<Page<Lancamento>> buscarPorBalanco(
+			@RequestParam(name = "balanco") Long idBalanco,
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "6") Integer size,
+			@RequestParam(defaultValue = "2") Integer order
+		){
+		
+		Page<Lancamento> lancamentos = this.service.buscarPorBalanco(idBalanco, page, size, order);
+		
+		if(lancamentos == null) {
+			throw new ObjectBadRequestException("Erro! verifique os dados informados!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(lancamentos);
 		
 	}
 	

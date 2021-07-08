@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
@@ -96,6 +99,30 @@ public class LancamentoService {
 		}
 		
 		return lancamento.get();
+	}
+	
+	public Page<Lancamento> buscarPorBalanco(Long idBalanco, Integer page, Integer size, Integer order) {
+		
+		Balanco balanco = this.balancoService.buscarPorId(idBalanco);
+		
+		if(balanco == null) {
+			return null;
+		}
+		
+		Direction d = Direction.DESC;
+		
+		if(order == 1) {
+			d = Direction.ASC;
+		}else if(order == 2) {
+			d = Direction.DESC;
+		}
+		
+		PageRequest pageable = PageRequest.of(page, size, d, "dataCadastro");
+		
+		Page<Lancamento> lancamentos = this.repository.findByBalanco(balanco, pageable);
+		
+		return lancamentos;
+		
 	}
 	
 }
