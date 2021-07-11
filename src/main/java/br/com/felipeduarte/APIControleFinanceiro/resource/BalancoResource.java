@@ -3,6 +3,7 @@ package br.com.felipeduarte.APIControleFinanceiro.resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ public class BalancoResource {
 	@Autowired
 	private BalancoService service;
 	
+	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/atual")
 	public ResponseEntity<Balanco> recuperarAtual(@RequestParam(name = "categoria") Long idCategoria){
 		
@@ -35,6 +37,7 @@ public class BalancoResource {
 		
 	}
 	
+	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/data")
 	public ResponseEntity<Balanco> recuperarPorDate(
 		@RequestParam(name = "categoria") Long idCategoria, 

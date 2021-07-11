@@ -17,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	
 	private static String[] PATH_PUBLICO = {"/usuario","/login"};
@@ -33,8 +34,8 @@ public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 		.antMatchers(HttpMethod.POST,PATH_PUBLICO).permitAll()
 		.anyRequest().authenticated()
 		.and()
-		.addFilter(new JWTAuthorizacaoFiltro(authenticationManager(), this.jwtUtil))
 		.addFilter(new JWTAutenticacaoFiltro(authenticationManager(), this.jwtUtil))
+		.addFilter(new JWTAutorizacaoFiltro(authenticationManager(), this.jwtUtil,this.usuarioDetalheService))
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 	

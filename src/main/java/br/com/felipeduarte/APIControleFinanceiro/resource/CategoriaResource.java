@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,7 @@ public class CategoriaResource {
 	@Autowired
 	private CategoriaService service;
 	
+	@PreAuthorize("hasAnyRole('USER')")
 	@PostMapping
 	public ResponseEntity<Categoria> salvar(@RequestBody @Valid CategoriaDTO categoria){
 		
@@ -44,6 +46,7 @@ public class CategoriaResource {
 		
 	}
 	
+	@PreAuthorize("hasAnyRole('USER')")
 	@PutMapping
 	public ResponseEntity<Categoria> atualizar(@RequestBody @Valid CategoriaDTO categoria){
 		
@@ -56,6 +59,7 @@ public class CategoriaResource {
 		return ResponseEntity.status(HttpStatus.OK).body(cat);
 	}
 	
+	@PreAuthorize("hasAnyRole('USER')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
 		
@@ -68,6 +72,7 @@ public class CategoriaResource {
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
+	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/{id}")
 	public ResponseEntity<Categoria> buscarPorId(@PathVariable(name = "id") Long id){
 		
@@ -80,6 +85,7 @@ public class CategoriaResource {
 		return ResponseEntity.status(HttpStatus.OK).body(categoria);
 	}
 	
+	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping
 	public ResponseEntity<Page<Categoria>> listar(
 		@RequestParam(defaultValue = "0") Integer page,

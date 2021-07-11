@@ -24,7 +24,8 @@ public class UsuarioDetalheService implements UserDetailsService {
 		
 		if(usuario.isEmpty()) throw new UsernameNotFoundException(email);
 		
-		return new UsuarioDetalhe(usuario.get().getId(),usuario.get().getEmail(),usuario.get().getSenha(),null);
+		return new UsuarioDetalhe(usuario.get().getId(),usuario.get().getEmail(),
+				usuario.get().getSenha(),usuario.get().getTipo());
 		
 	}
 

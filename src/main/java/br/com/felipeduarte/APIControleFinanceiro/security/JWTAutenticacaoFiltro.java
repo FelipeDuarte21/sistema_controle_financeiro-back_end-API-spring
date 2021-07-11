@@ -10,45 +10,51 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-public class JWTAutenticacaoFiltro extends BasicAuthenticationFilter{
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class JWTAutenticacaoFiltro extends UsernamePasswordAuthenticationFilter {
 	
-	private JWTUtil jwtUtil;
-
+	private final AuthenticationManager authenticationManager;
+	private final JWTUtil jwtUtil;
+	
 	public JWTAutenticacaoFiltro(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
-		super(authenticationManager);
+		this.authenticationManager = authenticationManager;
 		this.jwtUtil = jwtUtil;
 	}
 	
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+			throws AuthenticationException {
 		
-		String header = request.getHeader("Authorization");
+		try {
+			UsuarioDTO usuario = new ObjectMapper().readValue(request.getInputStream(),UsuarioDTO.class);
 		
-		if(header != null && header.startsWith("Bearer ")) {
-			UsernamePasswordAuthenticationToken auth = this.getAuthentication(header.substring(7));
-			
-			if(auth != null) {
-				SecurityContextHolder.getContext().setAuthentication(auth);
-			}
-			
+			return this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+					usuario.getEmail(),
+					usuario.getSenha(),
+					new ArrayList<>()
+			));
+		
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 		
-		chain.doFilter(request, response);
 	}
 	
-	private UsernamePasswordAuthenticationToken getAuthentication(String token) {
+	@Override
+	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+			Authentication authResult) throws IOException, ServletException {
 		
-		String usuario = this.jwtUtil.validarToken(token);
+		UsuarioDetalhe usuario = (UsuarioDetalhe) authResult.getPrincipal();
 		
-		if(usuario == null) return null;
+		String token = this.jwtUtil.geradorToken(usuario);
 		
-		return new UsernamePasswordAuthenticationToken(usuario,null,new ArrayList<>());
- 		
+		response.addHeader("Authorization", "Bearer " + token);
+		
 	}
-	
 	
 }

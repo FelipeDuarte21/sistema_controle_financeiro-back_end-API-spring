@@ -8,6 +8,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
+
 
 public class UsuarioDetalhe implements UserDetails {
 
@@ -17,21 +19,20 @@ public class UsuarioDetalhe implements UserDetails {
 	private String email;
 	private String senha;
 	
-	//private Collection<? extends GrantedAuthority> autorizacoes;
+	private Collection<? extends GrantedAuthority> autorizacoes;
 	
 	public UsuarioDetalhe(Long id, String email,String senha,Set<Integer> tipos) {
 		this.id = id;
 		this.email = email;
 		this.senha = senha;
-		/*this.autorizacoes = tipos.stream().map(
+		this.autorizacoes = tipos.stream().map(
 				t -> new SimpleGrantedAuthority(TipoUsuario.toEnum(t).getDescricao()) ).collect(Collectors.toList());
-				*/
+				
 	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		//return this.autorizacoes;
-		return null;
+		return this.autorizacoes;
 	}
 	
 	public Long getId() {
@@ -68,9 +69,9 @@ public class UsuarioDetalhe implements UserDetails {
 		return true;
 	}
 	
-	/*
+	
 	public boolean hasRole(String role) {
 		return this.autorizacoes.contains(new SimpleGrantedAuthority(role));
-	}*/
+	}
 
 }

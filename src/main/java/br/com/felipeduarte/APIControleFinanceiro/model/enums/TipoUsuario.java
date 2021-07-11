@@ -1,4 +1,4 @@
-package br.com.felipeduarte.APIControleFinanceiro.security;
+package br.com.felipeduarte.APIControleFinanceiro.model.enums;
 
 public enum TipoUsuario {
 	

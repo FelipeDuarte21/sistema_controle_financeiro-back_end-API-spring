@@ -2,9 +2,13 @@ package br.com.felipeduarte.APIControleFinanceiro.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -38,6 +42,10 @@ public class Usuario implements Serializable{
 	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Categoria> categorias = new ArrayList<>();
+	
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "tipo_usuario")
+	private Set<Integer> tipo = new HashSet<>();
 	
 	public Usuario() {
 		
@@ -81,6 +89,14 @@ public class Usuario implements Serializable{
 
 	public void setCategorias(List<Categoria> categorias) {
 		this.categorias = categorias;
+	}
+
+	public Set<Integer> getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(Set<Integer> tipo) {
+		this.tipo = tipo;
 	}
 
 	@Override

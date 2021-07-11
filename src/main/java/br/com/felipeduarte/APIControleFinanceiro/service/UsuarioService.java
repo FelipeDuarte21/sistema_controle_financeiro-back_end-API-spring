@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 
 @Service
@@ -34,6 +35,8 @@ public class UsuarioService {
 		Usuario usu = Usuario.converteParaUsuario(usuario);
 		
 		usu.setSenha(this.bCrypt.encode(usu.getSenha()));
+		
+		usu.getTipo().add(TipoUsuario.USUARIO.getCodigo());
 		
 		usu = this.repository.save(usu);
 		return usu;
