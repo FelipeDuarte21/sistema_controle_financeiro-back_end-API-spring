@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
@@ -18,6 +19,9 @@ public class UsuarioService {
 	
 	@Autowired
 	private UsuarioRepository repository;
+	
+	@Autowired
+	private BCryptPasswordEncoder bCrypt;
 
 	public Usuario salvar(UsuarioSalvarDTO usuario) {
 		
@@ -28,6 +32,9 @@ public class UsuarioService {
 		}
 		
 		Usuario usu = Usuario.converteParaUsuario(usuario);
+		
+		usu.setSenha(this.bCrypt.encode(usu.getSenha()));
+		
 		usu = this.repository.save(usu);
 		return usu;
 		
