@@ -13,6 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
 
 @Entity
@@ -34,6 +36,7 @@ public class Lancamento implements Serializable{
 	
 	private Boolean sugestao;
 	
+	@JsonIgnore
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_balanco")
 	private Balanco balanco;

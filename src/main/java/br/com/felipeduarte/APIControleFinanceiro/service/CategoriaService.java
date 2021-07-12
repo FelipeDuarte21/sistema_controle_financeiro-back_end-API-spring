@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,10 @@ public class CategoriaService {
 	private CategoriaRepository repository;
 	
 	@Autowired
-	private UsuarioService usuarioService;
+	private BalancoService balancoService;
 	
 	@Autowired
-	private BalancoService balancoService;
+	private RestricaoService restricaoService;
 	
 	public Categoria salvar(CategoriaDTO categoria) {
 		
@@ -36,8 +37,8 @@ public class CategoriaService {
 		
 		cat = Categoria.converteParaCategoria(categoria);
 		
-		//Deverá trocar para o usuário logado
-		Usuario usuario = this.usuarioService.buscarPorId(1L);
+		//Obtem o usuário logado
+		Usuario usuario = this.restricaoService.getUsuario();
 		cat.setUsuario(usuario);
 		
 		//Tratando a data
@@ -62,6 +63,9 @@ public class CategoriaService {
 			return null;
 		}
 		
+		//Verifica se categoria pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(cat.get());
+		
 		Categoria c = Categoria.converteParaCategoria(categoria);
 		c.setUsuario(cat.get().getUsuario());
 		
@@ -77,6 +81,9 @@ public class CategoriaService {
 			return false;
 		}
 		
+		//Verifica se categoria pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(cat.get());
+		
 		this.repository.delete(cat.get());
 		return true;
 	}
@@ -89,7 +96,19 @@ public class CategoriaService {
 			return null;
 		}
 		
+		//Verifica se categoria pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(categoria.get());
+		
 		return categoria.get();
+	}
+	
+	public List<Categoria> buscarPorUsuario(Usuario usuario) {
+		
+		List<Categoria> categorias = this.repository.findByUsuario(usuario);
+		
+		if(categorias.isEmpty()) return null;
+		
+		return categorias;
 	}
 	
 	public Page<Categoria> listar(Integer page, Integer size, Integer order){
@@ -103,8 +122,8 @@ public class CategoriaService {
 		
 		PageRequest pageable = PageRequest.of(page, size,d,"nome");
 		
-		//Depois buscar o usuário que estiver autenticado, por enquanto é só pra desenvolvimento
-		Usuario usuario = this.usuarioService.buscarPorId(1L);
+		//Obtem o usuário logado
+		Usuario usuario = this.restricaoService.getUsuario();
 		
 		Page<Categoria> categorias = this.repository.findByUsuario(usuario, pageable);
 		

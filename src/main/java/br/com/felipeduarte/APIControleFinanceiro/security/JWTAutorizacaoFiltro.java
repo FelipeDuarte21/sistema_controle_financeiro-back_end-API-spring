@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 public class JWTAutorizacaoFiltro extends BasicAuthenticationFilter{
@@ -50,10 +51,14 @@ public class JWTAutorizacaoFiltro extends BasicAuthenticationFilter{
 		
 		if(usuarioEmail == null) return null;
 		
-		UsuarioDetalhe usuario = (UsuarioDetalhe) this.usuarioDetalheService.loadUserByUsername(usuarioEmail);
+		try {
+			UsuarioDetalhe usuario = (UsuarioDetalhe) this.usuarioDetalheService.loadUserByUsername(usuarioEmail);
+			return new UsernamePasswordAuthenticationToken(usuarioEmail,null,usuario.getAuthorities());
 		
-		return new UsernamePasswordAuthenticationToken(usuarioEmail,null,usuario.getAuthorities());
- 		
+		}catch(UsernameNotFoundException e) {
+			return null;
+		}
+		
 	}
 	
 	

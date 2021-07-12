@@ -43,6 +43,7 @@ public class Usuario implements Serializable{
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Categoria> categorias = new ArrayList<>();
 	
+	@JsonIgnore
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "tipo_usuario")
 	private Set<Integer> tipo = new HashSet<>();

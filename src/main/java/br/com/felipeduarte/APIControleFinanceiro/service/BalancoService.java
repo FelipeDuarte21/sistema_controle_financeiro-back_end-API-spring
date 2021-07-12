@@ -21,6 +21,9 @@ public class BalancoService {
 	@Autowired
 	private CategoriaService categoriaService;
 	
+	@Autowired
+	private RestricaoService restricaoService;
+	
 	public Balanco recuperarAtual(Long idCategoria) {
 		
 		Categoria categoria = this.categoriaService.buscarPorId(idCategoria);
@@ -28,6 +31,9 @@ public class BalancoService {
 		if(categoria == null) {
 			return null;
 		}
+		
+		//Verifica se categoria do balanço pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(categoria);
 		
 		Balanco balanco = this.repository.findByCategoriaAndFechado(categoria, false);
 		
@@ -42,10 +48,12 @@ public class BalancoService {
 			return null;
 		}
 		
+		//Verifica se categoria do balanço pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(categoria);
+		
 		Balanco balanco = this.repository.findByCategoriaAndMesAndAno(categoria, mes, ano);
 		
 		return balanco;
-		
 	}
 	
 	public Balanco buscarPorId(Long id) {

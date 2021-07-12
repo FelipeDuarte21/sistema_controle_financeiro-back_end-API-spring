@@ -23,6 +23,9 @@ public class UsuarioService {
 	
 	@Autowired
 	private BCryptPasswordEncoder bCrypt;
+	
+	@Autowired
+	private RestricaoService restricaoService;
 
 	public Usuario salvar(UsuarioSalvarDTO usuario) {
 		
@@ -55,6 +58,10 @@ public class UsuarioService {
 			return null;
 		}
 		
+		//Verifica se usuario é o mesmo que está logado
+		this.restricaoService.verificarUsuario(usuario.getId());
+		
+		//Verifica se o caso o email foi alterado não esteja já cadastrado!
 		if(!usuario.getEmail().equals(u1.get().getEmail())) {
 			
 			Optional<Usuario> u2 = this.repository.findByEmail(usuario.getEmail());
@@ -67,6 +74,7 @@ public class UsuarioService {
 		
 		Usuario usu = Usuario.converteParaUsuario(usuario);
 		usu.setSenha(u1.get().getSenha());
+		usu.getTipo().add(TipoUsuario.USUARIO.getCodigo());
 		
 		usu = this.repository.save(usu);
 		
@@ -82,6 +90,9 @@ public class UsuarioService {
 			return false;
 		}
 		
+		//Verifica se usuario é o mesmo que está logado
+		this.restricaoService.verificarUsuario(id);
+		
 		this.repository.delete(usu.get());
 		return true;
 	}
@@ -96,6 +107,17 @@ public class UsuarioService {
 		
 		return usuario.get();
 		
+	}
+	
+	public Usuario buscarPorEmail(String email) {
+		
+		Optional<Usuario> usuario = this.repository.findByEmail(email);
+		
+		if(usuario.isEmpty()) {
+			return null;
+		}
+		
+		return usuario.get();
 	}
 	
 	public Page<Usuario> listar(Integer page, Integer size, Integer order){

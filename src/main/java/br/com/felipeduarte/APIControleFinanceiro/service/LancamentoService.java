@@ -27,6 +27,9 @@ public class LancamentoService {
 	@Autowired
 	private TipoLancamentoService tipoLancamentoService;
 	
+	@Autowired
+	private RestricaoService restricaoService;
+	
 	
 	public Lancamento salvar(LancamentoDTO lancamento) {
 		
@@ -39,6 +42,9 @@ public class LancamentoService {
 		if(tipoLancamento == null) {
 			return null;
 		}
+		
+		//Verifica se a categoria do balanco pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
 		
 		Lancamento lan = Lancamento.converteParaLancamento(lancamento);
 		
@@ -83,6 +89,9 @@ public class LancamentoService {
 		
 		Balanco balanco = lancamento.getBalanco();
 		
+		//Verifica se a categoria do balanco pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
+		
 		this.repository.delete(lancamento);
 		
 		this.balancoService.atualizarSaldo(balanco);
@@ -98,6 +107,9 @@ public class LancamentoService {
 			return null;
 		}
 		
+		//Verifica se a categoria do balanco pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(lancamento.get().getBalanco().getCategoria());
+		
 		return lancamento.get();
 	}
 	
@@ -108,6 +120,9 @@ public class LancamentoService {
 		if(balanco == null) {
 			return null;
 		}
+		
+		//Verifica se a categoria do balanco pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
 		
 		Direction d = Direction.DESC;
 		
