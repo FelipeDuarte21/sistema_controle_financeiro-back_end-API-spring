@@ -109,12 +109,16 @@ public class UsuarioService {
 		
 	}
 	
-	public Usuario buscarPorEmail(String email) {
+	public Usuario buscarPorEmail(String email,boolean verificaUsuarioLogado) {
 		
 		Optional<Usuario> usuario = this.repository.findByEmail(email);
 		
 		if(usuario.isEmpty()) {
 			return null;
+		}
+		
+		if(verificaUsuarioLogado) {
+			this.restricaoService.verificarUsuario(usuario.get().getId());
 		}
 		
 		return usuario.get();

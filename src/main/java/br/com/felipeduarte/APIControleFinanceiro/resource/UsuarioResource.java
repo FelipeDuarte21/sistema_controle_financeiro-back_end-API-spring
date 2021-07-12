@@ -84,6 +84,19 @@ public class UsuarioResource {
 		return ResponseEntity.status(HttpStatus.OK).body(usuario);
 	}
 	
+	@PreAuthorize("hasAnyRole('USER')")
+	@GetMapping("/email")
+	public ResponseEntity<Usuario> buscarPorEmail(@RequestParam String email){
+		
+		Usuario usuario = this.service.buscarPorEmail(email,true);
+		
+		if(usuario == null) {
+			throw new ObjectNotContentException("Usuário não encontrado para email informado!");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(usuario);
+	}
+
 	
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping

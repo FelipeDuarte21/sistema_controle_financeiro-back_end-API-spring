@@ -22,7 +22,7 @@ public class RestricaoService {
 	private Usuario getUsuarioLogado() {
 		try {
 			String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			Usuario usuario = this.usuarioService.buscarPorEmail(email);
+			Usuario usuario = this.usuarioService.buscarPorEmail(email,false);
 			return usuario;
 			
 		}catch(Exception e) {
