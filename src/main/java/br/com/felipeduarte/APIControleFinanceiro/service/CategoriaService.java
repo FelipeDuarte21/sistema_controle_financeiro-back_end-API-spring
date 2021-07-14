@@ -28,17 +28,16 @@ public class CategoriaService {
 	private RestricaoService restricaoService;
 	
 	public Categoria salvar(CategoriaDTO categoria) {
+		//Obtem o usuário logado
+		Usuario usuario = this.restricaoService.getUsuario();
 		
-		Categoria cat = this.repository.findByNome(categoria.getNome());
+		Categoria cat = this.repository.findByNomeAndUsuario(categoria.getNome(),usuario);
 		
 		if(cat != null) {
 			return null;
 		}
 		
 		cat = Categoria.converteParaCategoria(categoria);
-		
-		//Obtem o usuário logado
-		Usuario usuario = this.restricaoService.getUsuario();
 		cat.setUsuario(usuario);
 		
 		//Tratando a data
