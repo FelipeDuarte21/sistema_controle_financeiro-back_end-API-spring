@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
-import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
 import br.com.felipeduarte.APIControleFinanceiro.service.BalancoService;
 
 @RestController
@@ -27,7 +27,7 @@ public class BalancoResource {
 		Balanco balanco = this.service.recuperarAtual(idCategoria);
 		
 		if(balanco == null) {
-			throw new ObjectNotContentException("Erro! Balanco não encontrado, "
+			throw new ObjectNotFoundException("Erro! Balanco não encontrado, "
 					+ "verifique o id da categoria informada!");
 		}
 		
@@ -45,7 +45,7 @@ public class BalancoResource {
 		Balanco balanco = this.service.recuperarPorData(idCategoria, mes, ano);
 		
 		if(balanco == null) {
-			throw new ObjectNotContentException("Erro! Balanco não encontrado, "
+			throw new ObjectNotFoundException("Erro! Balanco não encontrado, "
 					+ "verifique o id da categoria informada!");
 		}
 		

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
-import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
 import br.com.felipeduarte.APIControleFinanceiro.service.CategoriaService;
 
 @RestController
@@ -77,7 +77,7 @@ public class CategoriaResource {
 		Categoria categoria = this.service.buscarPorId(id);
 		
 		if(categoria == null) {
-			throw new ObjectNotContentException("Erro! Categoria não encontrada!");
+			throw new ObjectNotFoundException("Erro! Categoria não encontrada!");
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).body(categoria);
