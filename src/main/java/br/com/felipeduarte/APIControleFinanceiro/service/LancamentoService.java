@@ -34,7 +34,7 @@ public class LancamentoService {
 	public Lancamento salvar(LancamentoDTO lancamento) {
 		
 		Balanco balanco = this.balancoService.buscarPorId(lancamento.getBalanco());
-		if(balanco == null) {
+		if(balanco == null || balanco.getFechado()) {
 			return null;
 		}
 		
@@ -83,7 +83,7 @@ public class LancamentoService {
 		
 		Lancamento lancamento = this.buscarPorId(id);
 		
-		if(lancamento == null) {
+		if(lancamento == null || lancamento.getBalanco().getFechado()) {
 			return false;
 		}
 		
