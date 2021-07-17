@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,8 @@ import br.com.felipeduarte.APIControleFinanceiro.repository.LancamentoRepository
 
 @Service
 public class LancamentoService {
+	
+	private static final String TIME_ZONE = "America/Sao_Paulo";
 	
 	@Autowired
 	private LancamentoRepository repository;
@@ -53,7 +56,7 @@ public class LancamentoService {
 		
 		//Tratando a data
 		if(lan.getDataCadastro() == null) {
-			lan.setDataCadastro(LocalDate.now());
+			lan.setDataCadastro(LocalDate.now(ZoneId.of(TIME_ZONE)));
 		}
 		
 		lan = this.repository.save(lan);

@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,8 @@ import br.com.felipeduarte.APIControleFinanceiro.repository.CategoriaRepository;
 
 @Service
 public class CategoriaService {
+	
+	private static final String TIME_ZONE = "America/Sao_Paulo";
 	
 	@Autowired
 	private CategoriaRepository repository;
@@ -41,7 +44,7 @@ public class CategoriaService {
 		cat.setUsuario(usuario);
 		
 		//Tratando a data
-		cat.setDataCadastro(LocalDate.now());
+		cat.setDataCadastro(LocalDate.now(ZoneId.of(TIME_ZONE)));
 		
 		cat = this.repository.save(cat);
 		

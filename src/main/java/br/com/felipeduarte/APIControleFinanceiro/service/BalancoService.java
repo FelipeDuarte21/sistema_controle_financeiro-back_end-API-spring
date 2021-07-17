@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,8 @@ import br.com.felipeduarte.APIControleFinanceiro.repository.BalancoRepository;
 
 @Service
 public class BalancoService {
+	
+	private static final String TIME_ZONE = "America/Sao_Paulo";
 	
 	@Autowired
 	private BalancoRepository repository;
@@ -70,7 +73,7 @@ public class BalancoService {
 	
 	public void cadastrar(Categoria categoria) {
 		
-		LocalDate agora = LocalDate.now();
+		LocalDate agora = LocalDate.now(ZoneId.of(TIME_ZONE));
 		
 		LocalDate dataAnterior = agora.minusMonths(1);
 		Balanco balancoAnterior = this.repository.findByCategoriaAndMesAndAno(categoria, 
@@ -125,7 +128,7 @@ public class BalancoService {
 	
 	public void fecharBalancos() {
 		
-		LocalDate hoje = LocalDate.now();
+		LocalDate hoje = LocalDate.now(ZoneId.of(TIME_ZONE));
 		LocalDate mesPassado = hoje.minusMonths(1);
 		
 		List<Balanco> balancos = this.repository.findByFechadoAndMesAndAno(false,
