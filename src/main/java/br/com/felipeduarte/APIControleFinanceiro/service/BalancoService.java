@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,7 @@ public class BalancoService {
 		balanco.setId(null);
 		balanco.setMes(agora.getMonthValue());
 		balanco.setAno(agora.getYear());
-		balanco.setSaldoAnterior(0.0);
+		balanco.setSaldoAnterior(saldoAnterior);
 		balanco.setSaldoAtual(saldoAnterior);
 		balanco.setFechado(false);
 		balanco.setCategoria(categoria);
@@ -117,6 +118,25 @@ public class BalancoService {
 			b.setSaldoAtual(saldoAnterior + proventos - despesas); 
 			
 			this.repository.save(b);
+			
+		}
+		
+	}
+	
+	public void fecharBalancos() {
+		
+		LocalDate hoje = LocalDate.now();
+		LocalDate mesPassado = hoje.minusMonths(1);
+		
+		List<Balanco> balancos = this.repository.findByFechadoAndMesAndAno(false,
+				mesPassado.getMonthValue(),mesPassado.getYear());;
+		
+		if(balancos != null) {
+			
+			balancos.forEach(balanco -> {
+				balanco.setFechado(true);
+				this.repository.save(balanco);
+			});
 			
 		}
 		

@@ -129,4 +129,18 @@ public class CategoriaService {
 		return categorias;
 	}
 	
+	public void abrirBalanco(){
+		
+		List<Categoria> categorias = this.repository.findAll();
+		
+		if(categorias != null) {
+			
+			categorias.forEach(categoria -> {
+				this.balancoService.cadastrar(categoria);
+			});
+			
+		}
+		
+	}
+	
 }
