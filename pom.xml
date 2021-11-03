@@ -11,7 +11,6 @@
 	<groupId>br.com.felipeduarte</groupId>
 	<artifactId>APIControleFinanceiro</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
 	<name>APIControleFinanceiro</name>
 	<description>Back-end baseado em API(web-service) para o sistema de controle financeiro</description>
 	<properties>
