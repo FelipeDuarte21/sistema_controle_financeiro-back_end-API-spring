@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+##Properties
+src/main/resources/application.properties
+src/main/resources/application-dsv.properties
+src/main/resources/application-prod.properties
