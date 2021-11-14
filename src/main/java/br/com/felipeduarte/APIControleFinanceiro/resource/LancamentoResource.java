@@ -3,7 +3,9 @@ package br.com.felipeduarte.APIControleFinanceiro.resource;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.ArquivoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
@@ -100,6 +103,23 @@ public class LancamentoResource {
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).body(lancamentos);
+		
+	}
+	
+	//@PreAuthorize("hasAnyRole('USER')")
+	@GetMapping(value = "/arquivo", produces = "text/csv")
+	public ResponseEntity<Resource> gerarArquivoCSV(@RequestParam(name = "balanco") Long idBalanco){
+		
+		ArquivoDTO arquivoDTO = this.service.gerarArquivoCSV(idBalanco);
+		
+		if(arquivoDTO == null) throw new ObjectBadRequestException("Erro ao tentar recuperar arquivo csv!");
+		
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + arquivoDTO.getNomeArquivo());
+	    headers.set(HttpHeaders.CONTENT_TYPE, "text/csv");
+	    headers.add("file_name", arquivoDTO.getNomeArquivo());
+
+	    return new ResponseEntity<>(arquivoDTO.getArquivo(),headers,HttpStatus.OK);
 		
 	}
 	

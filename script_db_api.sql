@@ -15,7 +15,7 @@ CREATE TABLE usuario(
 	id serial NOT NULL PRIMARY KEY,
 	nome varchar(50) NOT NULL,
 	email varchar(80) not null unique,
-	senha varchar(16) not null
+	senha text not null
 );
 
 CREATE TABLE tipo_usuario(
