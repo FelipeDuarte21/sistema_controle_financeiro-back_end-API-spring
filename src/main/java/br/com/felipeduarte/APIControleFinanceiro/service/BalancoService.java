@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
 
+import org.apache.commons.math3.util.Precision;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -119,8 +120,8 @@ public class BalancoService {
 		if(b != null) {
 			
 			double saldoAnterior = balanco.getSaldoAnterior();
-			double proventos = 0.0;
-			double despesas = 0.0;
+			double proventos = 0.00;
+			double despesas = 0.00;
 			
 			for(Lancamento l: b.getLancamentos()) {
 				
@@ -134,7 +135,9 @@ public class BalancoService {
 				
 			}
 			
-			b.setSaldoAtual(saldoAnterior + proventos - despesas); 
+			Double saldo = saldoAnterior + proventos - despesas;
+			
+			b.setSaldoAtual(Precision.round(saldo, 2)); 
 			
 			this.repository.save(b);
 			

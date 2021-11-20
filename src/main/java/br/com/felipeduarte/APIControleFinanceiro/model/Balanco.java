@@ -114,6 +114,10 @@ public class Balanco implements Serializable{
 	public void setLancamentos(List<Lancamento> lancamentos) {
 		this.lancamentos = lancamentos;
 	}
+	
+	public void rmvLancamento(Lancamento lancamento) {
+		this.lancamentos.remove(lancamento);
+	}
 
 	@Override
 	public int hashCode() {

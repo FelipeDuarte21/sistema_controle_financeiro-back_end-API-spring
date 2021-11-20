@@ -112,6 +112,8 @@ public class LancamentoService {
 		
 		this.repository.delete(lancamento);
 		
+		balanco.rmvLancamento(lancamento);
+		
 		this.balancoService.atualizarSaldo(balanco);
 		
 		return true;
