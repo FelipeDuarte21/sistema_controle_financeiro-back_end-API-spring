@@ -54,6 +54,8 @@ public class LancamentoService {
 			return null;
 		}
 		
+		if(balanco.getFechado()) return null;
+		
 		TipoLancamento tipoLancamento = this.tipoLancamentoService.buscarPorValor(lancamento.getTipo());
 		if(tipoLancamento == null) {
 			return null;
