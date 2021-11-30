@@ -54,6 +54,8 @@ public class LancamentoService {
 			return null;
 		}
 		
+		if(balanco.getFechado()) return null;
+		
 		TipoLancamento tipoLancamento = this.tipoLancamentoService.buscarPorValor(lancamento.getTipo());
 		if(tipoLancamento == null) {
 			return null;
@@ -109,6 +111,8 @@ public class LancamentoService {
 		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
 		
 		this.repository.delete(lancamento);
+		
+		balanco.rmvLancamento(lancamento);
 		
 		this.balancoService.atualizarSaldo(balanco);
 		
