@@ -91,7 +91,9 @@ public class BalancoService {
 			
 			balancos.add(balancoAtual);
 			
-			for(int i=metade+1; i <= qtdMes; i++) {
+			dataBalanco = LocalDate.of(ano, mes, 1);
+			
+			for(int i=1; i < metade; i++) {
 				
 				LocalDate dataVez = dataBalanco.plusMonths(i);
 				
