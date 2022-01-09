@@ -2,6 +2,8 @@ package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.util.Precision;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoResumoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
 import br.com.felipeduarte.APIControleFinanceiro.repository.BalancoRepository;
 
@@ -27,6 +30,99 @@ public class BalancoService {
 	
 	@Autowired
 	private RestricaoService restricaoService;
+	
+	public List<BalancoResumoDTO> buscarTodosResumo(Long idCategoria, Integer ano, Integer mes, 
+			Integer qtdMes){
+		
+		//Só aceita número Impar
+		if(qtdMes % 2 == 0) return null;
+		
+		Categoria categoria = this.categoriaService.buscarPorId(idCategoria);
+		
+		if(categoria == null) {
+			return null;
+		}
+		
+		//Verifica se categoria do balanço pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(categoria);
+		
+		Balanco balancoAtual = this.repository.findByCategoriaAndMesAndAno(categoria, mes, ano);
+		if(balancoAtual == null) return null;
+		
+		List<Balanco> balancos = new ArrayList<>();
+		
+		LocalDate agora = LocalDate.now();
+		
+		if(LocalDate.of(balancoAtual.getAno(), balancoAtual.getMes(),1).isEqual(
+				LocalDate.of(agora.getYear(), agora.getMonth(), 1))) { //Mês atual não tem meses depois
+			
+			
+			for(int i=qtdMes-1; i > 0 ; i--) {
+				
+				LocalDate dataVez = agora.minusMonths(i);
+				
+				Balanco balancoVez = 
+						this.repository.findByCategoriaAndMesAndAno(
+								categoria, dataVez.getMonth().getValue(), dataVez.getYear());
+				
+				if(balancoVez != null) balancos.add(balancoVez);
+				
+			}
+			
+			balancos.add(balancoAtual);
+			
+		}else { //Mês não atual, existe meses pra frente e para atras
+			
+			LocalDate dataBalanco = LocalDate.of(ano, mes, 1);
+			
+			int metade = (qtdMes + 1) / 2 ;
+			
+			for(int i=metade-1; i > 0; i--) {
+				
+				LocalDate dataVez = dataBalanco.minusMonths(i);
+				
+				Balanco balancoVez = 
+						this.repository.findByCategoriaAndMesAndAno(
+								categoria, dataVez.getMonth().getValue(), dataVez.getYear());
+				
+				if(balancoVez != null) balancos.add(balancoVez);
+				
+			}
+			
+			balancos.add(balancoAtual);
+			
+			for(int i=metade+1; i <= qtdMes; i++) {
+				
+				LocalDate dataVez = dataBalanco.plusMonths(i);
+				
+				Balanco balancoVez = 
+						this.repository.findByCategoriaAndMesAndAno(
+								categoria, dataVez.getMonth().getValue(), dataVez.getYear());
+				
+				System.out.println("Data: " + dataVez);
+				
+				if(balancoVez != null) balancos.add(balancoVez);
+				
+			}
+			
+			
+		}
+		
+		List<BalancoResumoDTO> balancosDTO = new ArrayList<>();
+		
+		for(Balanco b: balancos) {
+			BalancoResumoDTO bdto = BalancoResumoDTO.converteBalancoParaBalancoResumoDTO(b);
+			
+			if((bdto.getAno().equals(ano)) && (bdto.getMes().equals(mes)))
+				bdto.setAtual(true);
+			else
+				bdto.setAtual(false);
+			
+			balancosDTO.add(bdto);
+		}
+		
+		return balancosDTO;
+	}
 	
 	public Balanco recuperarAtual(Long idCategoria) {
 		
