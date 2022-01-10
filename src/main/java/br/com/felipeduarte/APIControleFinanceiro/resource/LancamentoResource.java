@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ArquivoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.TransferenciaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
 import br.com.felipeduarte.APIControleFinanceiro.service.LancamentoService;
@@ -44,6 +45,18 @@ public class LancamentoResource {
 		}
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(lan);
+	}
+	
+	@PreAuthorize("hasAnyRole('USER')")
+	@PostMapping("/transferencia")
+	public ResponseEntity<?> transferir(@RequestBody @Valid TransferenciaDTO transferencia){
+		
+		boolean resp = this.service.tranferir(transferencia);
+		
+		if(resp == false) throw new ObjectBadRequestException("Erro! Transferência não concluída");
+		
+		return ResponseEntity.status(HttpStatus.OK).build();
+		
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
@@ -122,5 +135,7 @@ public class LancamentoResource {
 	    return new ResponseEntity<>(arquivoDTO.getArquivo(),headers,HttpStatus.OK);
 		
 	}
+	
+	
 	
 }

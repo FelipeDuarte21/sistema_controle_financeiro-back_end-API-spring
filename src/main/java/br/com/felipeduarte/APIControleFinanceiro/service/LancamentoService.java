@@ -13,6 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,8 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.TipoLancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ArquivoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.TransferenciaDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
 import br.com.felipeduarte.APIControleFinanceiro.repository.LancamentoRepository;
 
 @Service
@@ -79,6 +84,40 @@ public class LancamentoService {
 		this.balancoService.atualizarSaldo(lan.getBalanco());
 		
 		return lan;
+	}
+	
+	@Transactional(value = TxType.REQUIRES_NEW, rollbackOn = Exception.class)
+	public boolean tranferir(TransferenciaDTO transferencia) {
+		
+		Balanco balOrigem = this.balancoService.recuperarAtual(transferencia.idCategoriaOrigem);
+		
+		Balanco balDestino = this.balancoService.recuperarAtual(transferencia.idCategoriaDestino);
+		
+		LancamentoDTO lancamento = new LancamentoDTO();
+		lancamento.setNome(transferencia.getNome());
+		lancamento.setDescricao(transferencia.getDescricao());
+		lancamento.setValor(transferencia.getValor());
+		lancamento.setSugestao(false);
+		
+		//Parametros da categoria de origem
+		lancamento.setBalanco(balOrigem.getId());
+		lancamento.setTipo(TipoLancamentoEnum.DESPESA.getValor());
+		
+		//Fazendo Transferência/lançamento no balanço atual da categoria de origem
+		Lancamento retornoOrigem = this.salvar(lancamento);
+		if(retornoOrigem == null) 
+			throw new RuntimeException("Erro ao tentar transferir da categoria de origem!");
+	
+		//Parametros da categoria de destino
+		lancamento.setBalanco(balDestino.getId());
+		lancamento.setTipo(TipoLancamentoEnum.PROVENTO.getValor());
+		
+		//Fazendo Transferência/lançamento no balanço atual da categoria de destino
+		Lancamento retornoDestino = this.salvar(lancamento);
+		if(retornoDestino == null) 
+			throw new RuntimeException("Erro ao tentar transferir para a categoria de destino!");
+
+		return true;
 	}
 	
 	public Lancamento alterar(LancamentoDTO lancamento) {
@@ -152,7 +191,7 @@ public class LancamentoService {
 			d = Direction.DESC;
 		}
 		
-		PageRequest pageable = PageRequest.of(page, size, d, "dataCadastro");
+		PageRequest pageable = PageRequest.of(page, size, d, "id");
 		
 		Page<Lancamento> lancamentos = this.repository.findByBalanco(balanco, pageable);
 		

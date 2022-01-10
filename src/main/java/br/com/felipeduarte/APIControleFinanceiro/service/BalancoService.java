@@ -101,8 +101,6 @@ public class BalancoService {
 						this.repository.findByCategoriaAndMesAndAno(
 								categoria, dataVez.getMonth().getValue(), dataVez.getYear());
 				
-				System.out.println("Data: " + dataVez);
-				
 				if(balancoVez != null) balancos.add(balancoVez);
 				
 			}
