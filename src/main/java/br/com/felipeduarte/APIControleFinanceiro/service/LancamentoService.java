@@ -95,11 +95,13 @@ public class LancamentoService {
 		
 		LancamentoDTO lancamento = new LancamentoDTO();
 		lancamento.setNome(transferencia.getNome());
-		lancamento.setDescricao(transferencia.getDescricao());
+		
 		lancamento.setValor(transferencia.getValor());
 		lancamento.setSugestao(false);
 		
 		//Parametros da categoria de origem
+		lancamento.setDescricao(transferencia.getDescricao() + " - Transferência Destino: " 
+				+ balDestino.getCategoria().getNome());
 		lancamento.setBalanco(balOrigem.getId());
 		lancamento.setTipo(TipoLancamentoEnum.DESPESA.getValor());
 		
@@ -109,6 +111,8 @@ public class LancamentoService {
 			throw new RuntimeException("Erro ao tentar transferir da categoria de origem!");
 	
 		//Parametros da categoria de destino
+		lancamento.setDescricao(transferencia.getDescricao() + " - Transferência Origem: " 
+				+ balOrigem.getCategoria().getNome());
 		lancamento.setBalanco(balDestino.getId());
 		lancamento.setTipo(TipoLancamentoEnum.PROVENTO.getValor());
 		
