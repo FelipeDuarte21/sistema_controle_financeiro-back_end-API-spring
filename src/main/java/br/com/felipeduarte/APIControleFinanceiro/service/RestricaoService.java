@@ -8,21 +8,22 @@ import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
+import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
 
 @Service
 public class RestricaoService {
 	
 	@Autowired
-	private UsuarioService usuarioService;
+	private CategoriaService categoriaService;
 	
 	@Autowired
-	private CategoriaService categoriaService;
+	private UsuarioRepository usuarioRepository;
 	
 	private Usuario getUsuarioLogado() {
 		try {
 			String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			Usuario usuario = this.usuarioService.buscarPorEmail(email,false);
+			Usuario usuario = this.usuarioRepository.findByEmail(email).get();
 			return usuario;
 			
 		}catch(Exception e) {

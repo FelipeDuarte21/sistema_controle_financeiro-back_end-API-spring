@@ -1,5 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.resource;
 
+import java.util.Optional;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,15 +87,12 @@ public class UsuarioResource {
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/email")
-	public ResponseEntity<Usuario> buscarPorEmail(@RequestParam String email){
+	public ResponseEntity<UsuarioDTO> buscarPorEmail(@RequestParam String email){
 		
-		Usuario usuario = this.service.buscarPorEmail(email,true);
+		Optional<UsuarioDTO> optUsuario = this.service.buscarPorEmail(email,true);
 		
-		if(usuario == null) {
-			throw new ObjectNotContentException("Usuário não encontrado para email informado!");
-		}
+		return ResponseEntity.ok(optUsuario.get());
 		
-		return ResponseEntity.status(HttpStatus.OK).body(usuario);
 	}
 
 	

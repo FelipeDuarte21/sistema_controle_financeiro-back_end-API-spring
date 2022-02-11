@@ -1,10 +1,14 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +24,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
 
 class UsuarioServiceTest {
 
@@ -50,6 +55,48 @@ class UsuarioServiceTest {
 	void testandoFuncionamentoDoTeste0DiferenteDe0() {
 		assertNotEquals(0, 0);
 	}*/
+	
+	@Test
+	void retornandoUsuarioPeloEmailSemVerificaoDeUsuarioLogadoUsuarioEncontrado() {
+			
+		Mockito.when(usuarioRepository.findByEmail(Mockito.any()))
+			.thenReturn(Optional.of(getListaUsuarios().get(0)));
+		
+		Optional<UsuarioDTO> usuario = this.usuarioService.buscarPorEmail("luiz@gmail.com", false);
+		
+		assertNotNull(usuario);
+	}
+	
+	@Test
+	void retornandoUsuarioPeloEmailSemVerificacaoDeUsuarioLogadoUsuarioInexistente() {
+		
+		Mockito.when(usuarioRepository.findByEmail(Mockito.any())).thenReturn(Optional.empty());
+		
+		Optional<UsuarioDTO> usuario = this.usuarioService.buscarPorEmail("luiz@gmail.com", false);
+		
+		assertFalse(usuario.isPresent());
+		
+	}
+	
+	void retornandoUsuarioPeloEmailComVerificacaoDeUsuarioLogadoUsuarioNaoEstaLogado() {
+		
+		Mockito.when(usuarioRepository.findByEmail(Mockito.any()))
+			.thenReturn(Optional.of(getListaUsuarios().get(0)));
+		
+		assertThrows(AuthorizationException.class, () -> 
+			this.usuarioService.buscarPorEmail("luiz@gmail.com", true) );
+		
+	}
+	
+	void retornandoUsuarioPeloEmailComVerificacaoDeUsuarioLogadoUsuarioLogado() {
+		
+		Mockito.when(restricaoService.getUsuario()).thenReturn(getListaUsuarios().get(0));
+		
+		Optional<UsuarioDTO> usuario = this.usuarioService.buscarPorEmail("luiz@gmail.com", true);
+		
+		assertNotNull(usuario);
+		
+	}
 	
 	@Test
 	void retornandoPaginaDeUsuarioConformeONumeroDaPaginaAQuantidadeDeUsuariosEOrdenacaoDosRegistros() {

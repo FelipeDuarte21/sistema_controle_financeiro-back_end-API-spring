@@ -118,19 +118,17 @@ public class UsuarioService {
 		
 	}
 	
-	public Usuario buscarPorEmail(String email,boolean verificaUsuarioLogado) {
+	public Optional<UsuarioDTO> buscarPorEmail(String email,boolean verificaUsuarioLogado) {
 		
-		Optional<Usuario> usuario = this.repository.findByEmail(email);
+		Optional<Usuario> optUsuario = this.repository.findByEmail(email);
 		
-		if(usuario.isEmpty()) {
-			return null;
-		}
+		if(!optUsuario.isPresent()) return Optional.empty();
 		
-		if(verificaUsuarioLogado) {
-			this.restricaoService.verificarUsuario(usuario.get().getId());
-		}
+		if(verificaUsuarioLogado) 
+			this.restricaoService.verificarUsuario(optUsuario.get().getId());
 		
-		return usuario.get();
+		return Optional.of(new UsuarioDTO(optUsuario.get()));
+		
 	}
 	
 	public Page<UsuarioDTO> listar(Integer page, Integer size, Integer order){
