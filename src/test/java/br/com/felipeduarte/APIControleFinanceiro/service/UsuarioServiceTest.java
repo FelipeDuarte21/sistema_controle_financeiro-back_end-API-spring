@@ -101,10 +101,9 @@ class UsuarioServiceTest {
 	@Test
 	void retornandoPaginaDeUsuarioConformeONumeroDaPaginaAQuantidadeDeUsuariosEOrdenacaoDosRegistros() {
 		
-		PageRequest pageRequest = PageRequest.of(0, 3, Direction.ASC, "nome");
-		
-		Mockito.when( usuarioRepository.findAll( pageRequest ) )
-			.thenReturn(new PageImpl<Usuario>( getListaUsuarios(), pageRequest, 3));
+		Mockito.when( usuarioRepository.findAll( Mockito.any(PageRequest.class) ) )
+			.thenReturn(new PageImpl<Usuario>( getListaUsuarios(), 
+					PageRequest.of(0, 3, Direction.ASC, "nome"), 3) );
 		
 		Page<UsuarioDTO> pageUsuarios = this.usuarioService.listar(0, 3, 1);
 		
@@ -117,9 +116,7 @@ class UsuarioServiceTest {
 	@Test
 	void retornandoPaginaDeUsuariosVazia() {
 		
-		PageRequest pageRequest = PageRequest.of(0, 3, Direction.ASC, "nome");
-		
-		Mockito.when( usuarioRepository.findAll( pageRequest ) )
+		Mockito.when( usuarioRepository.findAll( Mockito.any(PageRequest.class) ) )
 			.thenReturn(new PageImpl<Usuario>(new ArrayList<>()));
 		
 		Page<UsuarioDTO> pageUsuarios = this.usuarioService.listar(0, 3, 1);
