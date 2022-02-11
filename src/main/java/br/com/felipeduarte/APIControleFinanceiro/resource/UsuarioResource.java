@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
@@ -98,15 +99,15 @@ public class UsuarioResource {
 	
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping
-	public ResponseEntity<Page<Usuario>> listar(
+	public ResponseEntity<Page<UsuarioDTO>> listar(
 		@RequestParam(defaultValue = "0") Integer page,
 		@RequestParam(defaultValue = "6") Integer size,
 		@RequestParam(defaultValue = "1") Integer order
 		){
 		
-		Page<Usuario> usuarios = this.service.listar(page, size, order);
+		Page<UsuarioDTO> usuarios = this.service.listar(page, size, order);
 		
-		return ResponseEntity.status(HttpStatus.OK).body(usuarios);
+		return ResponseEntity.ok(usuarios);
 		
 	}
 	

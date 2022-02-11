@@ -1,9 +1,11 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
@@ -18,14 +21,20 @@ import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 @Service
 public class UsuarioService {
 	
-	@Autowired
 	private UsuarioRepository repository;
 	
-	@Autowired
 	private BCryptPasswordEncoder bCrypt;
 	
-	@Autowired
 	private RestricaoService restricaoService;
+	
+	@Autowired
+	public UsuarioService(UsuarioRepository repository, BCryptPasswordEncoder bCrypt,
+			RestricaoService restricaoService) {
+		
+		this.repository = repository;
+		this.bCrypt = bCrypt;
+		this.restricaoService = restricaoService;
+	}
 
 	public Usuario salvar(UsuarioSalvarDTO usuario) {
 		
@@ -124,21 +133,21 @@ public class UsuarioService {
 		return usuario.get();
 	}
 	
-	public Page<Usuario> listar(Integer page, Integer size, Integer order){
+	public Page<UsuarioDTO> listar(Integer page, Integer size, Integer order){
 		
-		Direction d = Direction.ASC;
+		var direcao = Direction.ASC;
 		
-		if(order == 1) {
-			d = Direction.ASC;
-		}else if(order == 2) {
-			d = Direction.DESC;
-		}
+		if(order == 2) direcao = Direction.DESC;
 		
-		PageRequest pageable = PageRequest.of(page, size, d, "nome");
+		var pageable = PageRequest.of(page, size, direcao, "nome");
 		
-		Page<Usuario> usuarios = this.repository.findAll(pageable);
+		var pageUsuarios = this.repository.findAll(pageable);
 		
-		return usuarios;
+		var pageUsuarioDTO = new PageImpl<UsuarioDTO>(
+				pageUsuarios.getContent().stream().map(UsuarioDTO::new).collect(Collectors.toList()),
+					pageUsuarios.getPageable(),pageUsuarios.getContent().size());
+		
+		return pageUsuarioDTO;
 		
 	}
 	
