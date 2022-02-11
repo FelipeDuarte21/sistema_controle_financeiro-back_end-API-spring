@@ -14,7 +14,7 @@
 	<name>APIControleFinanceiro</name>
 	<description>Back-end baseado em API(web-service) para o sistema de controle financeiro</description>
 	<properties>
-		<java.version>16</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -70,7 +70,6 @@
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-dbcp2</artifactId>
-		    <version>2.8.0</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
