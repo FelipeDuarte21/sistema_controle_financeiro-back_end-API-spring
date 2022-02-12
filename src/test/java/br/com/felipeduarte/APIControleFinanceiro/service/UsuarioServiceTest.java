@@ -57,6 +57,30 @@ class UsuarioServiceTest {
 	}*/
 	
 	@Test
+	void retornandoUsuarioPeloIdUsuarioEncontrado() {
+		
+		Mockito.when(usuarioRepository.findById(Mockito.anyLong()))
+			.thenReturn(Optional.of(getListaUsuarios().get(0)));
+		
+		Optional<UsuarioDTO> optUsuario = this.usuarioService.buscarPorId(1L);
+		
+		assertTrue(optUsuario.isPresent());
+		assertEquals(1L, optUsuario.get().getId());
+		
+	}
+	
+	@Test
+	void retornandoUsuarioPeloIdUsuarioInexistente() {
+		
+		Mockito.when(usuarioRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+		
+		Optional<UsuarioDTO> optUsuario = this.usuarioService.buscarPorId(1L);
+		
+		assertFalse(optUsuario.isPresent());
+		
+	}
+	
+	@Test
 	void retornandoUsuarioPeloEmailSemVerificaoDeUsuarioLogadoUsuarioEncontrado() {
 			
 		Mockito.when(usuarioRepository.findByEmail(Mockito.any()))

@@ -106,21 +106,19 @@ public class UsuarioService {
 		return true;
 	}
 	
-	public Usuario buscarPorId(Long id) {
+	public Optional<UsuarioDTO> buscarPorId(Long id) {
 		
-		Optional<Usuario> usuario =  this.repository.findById(id);
+		var optUsuario =  this.repository.findById(id);
 		
-		if(usuario.isEmpty()) {
-			return null;
-		}
+		if(optUsuario.isEmpty()) return Optional.empty();
 		
-		return usuario.get();
+		return Optional.of(new UsuarioDTO(optUsuario.get()));
 		
 	}
 	
 	public Optional<UsuarioDTO> buscarPorEmail(String email,boolean verificaUsuarioLogado) {
 		
-		Optional<Usuario> optUsuario = this.repository.findByEmail(email);
+		var optUsuario = this.repository.findByEmail(email);
 		
 		if(!optUsuario.isPresent()) return Optional.empty();
 		

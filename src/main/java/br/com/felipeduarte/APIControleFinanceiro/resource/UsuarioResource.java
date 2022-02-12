@@ -24,7 +24,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
-import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
 import br.com.felipeduarte.APIControleFinanceiro.service.UsuarioService;
 
 @RestController
@@ -74,15 +74,14 @@ public class UsuarioResource {
 	
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping("/{id}")
-	public ResponseEntity<Usuario> buscarPorId(@PathVariable(name = "id") Long id){
+	public ResponseEntity<UsuarioDTO> buscarPorId(@PathVariable(name = "id") Long id){
 		
-		Usuario usuario = this.service.buscarPorId(id);
+		Optional<UsuarioDTO> optUsuario = this.service.buscarPorId(id);
 		
-		if(usuario == null){
-			throw new ObjectNotContentException("Usuário não encontrado para id informado!");
-		}
+		if(!optUsuario.isPresent())
+			throw new ObjectNotFoundException("Usuário não encontrado!");
 		
-		return ResponseEntity.status(HttpStatus.OK).body(usuario);
+		return ResponseEntity.ok(optUsuario.get());
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
