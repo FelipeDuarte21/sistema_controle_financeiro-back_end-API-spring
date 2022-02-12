@@ -57,7 +57,7 @@ class UsuarioServiceTest {
 	}*/
 	
 	@Test
-	void retornandoUsuarioPeloIdUsuarioEncontrado() {
+	void buscandoUsuarioPeloIdDeveRetornarOUsuario() {
 		
 		Mockito.when(usuarioRepository.findById(Mockito.anyLong()))
 			.thenReturn(Optional.of(getListaUsuarios().get(0)));
@@ -70,7 +70,7 @@ class UsuarioServiceTest {
 	}
 	
 	@Test
-	void retornandoUsuarioPeloIdUsuarioInexistente() {
+	void buscandoUsuarioPeloIdDeveRetornarUsuarioInexistente() {
 		
 		Mockito.when(usuarioRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
 		
@@ -81,18 +81,19 @@ class UsuarioServiceTest {
 	}
 	
 	@Test
-	void retornandoUsuarioPeloEmailSemVerificaoDeUsuarioLogadoUsuarioEncontrado() {
+	void buscandoUsuarioPeloEmailSemVerificaoDeUsuarioLogadoDeveRetornarOUsuario() {
 			
 		Mockito.when(usuarioRepository.findByEmail(Mockito.any()))
 			.thenReturn(Optional.of(getListaUsuarios().get(0)));
 		
-		Optional<UsuarioDTO> usuario = this.usuarioService.buscarPorEmail("luiz@gmail.com", false);
+		Optional<UsuarioDTO> optUsuario = this.usuarioService.buscarPorEmail("luiz@gmail.com", false);
 		
-		assertNotNull(usuario);
+		assertTrue(optUsuario.isPresent());
+		assertEquals("luiz@gmail.com", optUsuario.get().getEmail());
 	}
 	
 	@Test
-	void retornandoUsuarioPeloEmailSemVerificacaoDeUsuarioLogadoUsuarioInexistente() {
+	void buscandoUsuarioPeloEmailSemVerificacaoDeUsuarioLogadoDeveRetornarUsuarioInexistente() {
 		
 		Mockito.when(usuarioRepository.findByEmail(Mockito.any())).thenReturn(Optional.empty());
 		
@@ -102,7 +103,7 @@ class UsuarioServiceTest {
 		
 	}
 	
-	void retornandoUsuarioPeloEmailComVerificacaoDeUsuarioLogadoUsuarioNaoEstaLogado() {
+	void buscandoUsuarioPeloEmailVerificandoSeUsuarioEstaLogadoDeveLancarExceptionParaUsuarioNaoLogado() {
 		
 		Mockito.when(usuarioRepository.findByEmail(Mockito.any()))
 			.thenReturn(Optional.of(getListaUsuarios().get(0)));
@@ -112,18 +113,19 @@ class UsuarioServiceTest {
 		
 	}
 	
-	void retornandoUsuarioPeloEmailComVerificacaoDeUsuarioLogadoUsuarioLogado() {
+	void buscandoUsuarioPeloEmailVerificandoSeUsuarioEstaLogadoDeveRetornarOUsuario() {
 		
 		Mockito.when(restricaoService.getUsuario()).thenReturn(getListaUsuarios().get(0));
 		
-		Optional<UsuarioDTO> usuario = this.usuarioService.buscarPorEmail("luiz@gmail.com", true);
+		Optional<UsuarioDTO> optUsuario = this.usuarioService.buscarPorEmail("luiz@gmail.com", true);
 		
-		assertNotNull(usuario);
+		assertNotNull(optUsuario.get());
+		assertEquals("luiz@gmail.com", optUsuario.get().getEmail());
 		
 	}
 	
 	@Test
-	void retornandoPaginaDeUsuarioConformeONumeroDaPaginaAQuantidadeDeUsuariosEOrdenacaoDosRegistros() {
+	void buscandoPaginaDeUsuarioDeveRetornarNumeroDaPaginaQuantidadeDeUsuariosOrdenacao() {
 		
 		Mockito.when( usuarioRepository.findAll( Mockito.any(PageRequest.class) ) )
 			.thenReturn(new PageImpl<Usuario>( getListaUsuarios(), 
@@ -138,7 +140,7 @@ class UsuarioServiceTest {
 	}
 	
 	@Test
-	void retornandoPaginaDeUsuariosVazia() {
+	void buscandoPaginaDeUsuariosDeveRetornarPaginaVazia() {
 		
 		Mockito.when( usuarioRepository.findAll( Mockito.any(PageRequest.class) ) )
 			.thenReturn(new PageImpl<Usuario>(new ArrayList<>()));
