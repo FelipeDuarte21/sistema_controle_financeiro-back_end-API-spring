@@ -1,10 +1,10 @@
 package br.com.felipeduarte.APIControleFinanceiro.service.exception;
 
-public class NotFoundObjectToParameterException extends RuntimeException {
+public class ObjectNotFoundFromParameterException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public NotFoundObjectToParameterException(String message) {
+	public ObjectNotFoundFromParameterException(String message) {
 		super(message);
 	}
 	

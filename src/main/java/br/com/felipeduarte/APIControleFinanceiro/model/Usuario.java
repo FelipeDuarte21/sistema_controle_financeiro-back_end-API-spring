@@ -19,7 +19,6 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 
 @Entity
@@ -58,6 +57,12 @@ public class Usuario implements Serializable{
 		this.email = email;
 		this.senha = senha;
 	}
+	
+	public Usuario(UsuarioSalvarDTO usuarioDTO) {
+		this.nome = usuarioDTO.getNome();
+		this.email = usuarioDTO.getEmail();
+		this.senha = usuarioDTO.getSenha();
+ 	}
 
 	public Long getId() {
 		return id;
@@ -106,6 +111,10 @@ public class Usuario implements Serializable{
 	public void setTipo(Set<Integer> tipo) {
 		this.tipo = tipo;
 	}
+	
+	public void addTipo(Integer tipo) {
+		this.tipo.add(tipo);
+	}
 
 	@Override
 	public int hashCode() {
@@ -130,22 +139,6 @@ public class Usuario implements Serializable{
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
-	}
-	
-	public static Usuario converteParaUsuario(UsuarioSalvarDTO usuario) {
-		Usuario usu = new Usuario();
-		usu.setNome(usuario.getNome());
-		usu.setEmail(usuario.getEmail());
-		usu.setSenha(usuario.getSenha());
-		return usu;
-	}
-	
-	public static Usuario converteParaUsuario(UsuarioAtualizarDTO usuario) {
-		Usuario usu = new Usuario();
-		usu.setId(usuario.getId());
-		usu.setNome(usuario.getNome());
-		usu.setEmail(usuario.getEmail());
-		return usu;
 	}
 	
 }

@@ -1,6 +1,5 @@
 package br.com.felipeduarte.APIControleFinanceiro.resource.exception;
 
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,6 +64,5 @@ public class ResourceExceptionHandler extends ResponseEntityExceptionHandler{
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ea);
 		
 	}
-	
-	
+
 }

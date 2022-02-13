@@ -1,12 +1,11 @@
 package br.com.felipeduarte.APIControleFinanceiro.resource;
 
-import java.util.Optional;
+import java.net.URI;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,15 +17,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
 import br.com.felipeduarte.APIControleFinanceiro.service.UsuarioService;
-import br.com.felipeduarte.APIControleFinanceiro.service.exception.NotFoundObjectToParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @RestController
 @RequestMapping("/usuario")
@@ -36,29 +35,43 @@ public class UsuarioResource {
 	private UsuarioService service;
 	
 	@PostMapping
-	public ResponseEntity<Usuario> salvar(@RequestBody @Valid UsuarioSalvarDTO usuario){
+	public ResponseEntity<UsuarioDTO> salvar(@RequestBody @Valid UsuarioSalvarDTO usuarioDTO,
+			UriComponentsBuilder uriBuilder){
 		
-		Usuario usu = this.service.salvar(usuario);
-		
-		if(usu == null) {
-			throw new ObjectBadRequestException("Usuário Já Cadastrado!");
+		try {
+			
+			UsuarioDTO usuario = this.service.salvar(usuarioDTO);
+			
+			URI uri = uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
+			
+			return ResponseEntity.created(uri).body(usuario);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
 		}
-		
-		return ResponseEntity.status(HttpStatus.CREATED).body(usu);
+			
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
-	@PutMapping
-	public ResponseEntity<Usuario> update(@RequestBody @Valid UsuarioAtualizarDTO usuario){
+	@PutMapping("/{id}")
+	public ResponseEntity<UsuarioDTO> update(@PathVariable(name = "id") Long id, 
+			@RequestBody @Valid UsuarioSalvarDTO usuarioDTO){
 		
-		Usuario usu = this.service.atualizar(usuario);
-		
-		if(usu == null) {	
-			throw new ObjectBadRequestException("Erro! Verifique o id informado, "
-					+ "verifique se o usuario está cadastrado e verifique os dados informados!");		
+		try {
+			
+			UsuarioDTO usuario = this.service.atualizar(id, usuarioDTO);
+			
+			return ResponseEntity.ok(usuario);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
+			
 		}
 		
-		return ResponseEntity.status(HttpStatus.OK).body(usu);
 	}
 	
 	@DeleteMapping("/{id}")
@@ -70,8 +83,7 @@ public class UsuarioResource {
 			
 			return ResponseEntity.ok().build();
 			
-		}catch(NotFoundObjectToParameterException e){
-			
+		}catch(ObjectNotFoundFromParameterException e){
 			throw new ObjectNotFoundException(e.getMessage());
 		
 		}
@@ -82,21 +94,36 @@ public class UsuarioResource {
 	@GetMapping("/{id}")
 	public ResponseEntity<UsuarioDTO> buscarPorId(@PathVariable(name = "id") Long id){
 		
-		Optional<UsuarioDTO> optUsuario = this.service.buscarPorId(id);
+		try {
+			
+			UsuarioDTO usuario = this.service.buscarPorId(id);
+			
+			return ResponseEntity.ok(usuario);
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
+			
+		}
 		
-		if(!optUsuario.isPresent())
-			throw new ObjectNotFoundException("Usuário não encontrado!");
-		
-		return ResponseEntity.ok(optUsuario.get());
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/email")
 	public ResponseEntity<UsuarioDTO> buscarPorEmail(@RequestParam String email){
 		
-		Optional<UsuarioDTO> optUsuario = this.service.buscarPorEmail(email,true);
-		
-		return ResponseEntity.ok(optUsuario.get());
+		try {
+			
+			UsuarioDTO usuario = this.service.buscarPorEmail(email,true);
+			
+			return ResponseEntity.ok(usuario);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
+			
+		}
 		
 	}
 
@@ -109,9 +136,16 @@ public class UsuarioResource {
 		@RequestParam(defaultValue = "1") Integer order
 		){
 		
-		Page<UsuarioDTO> usuarios = this.service.listar(page, size, order);
+		try {
 		
-		return ResponseEntity.ok(usuarios);
+			Page<UsuarioDTO> usuarios = this.service.listar(page, size, order);
+			
+			return ResponseEntity.ok(usuarios);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}
 		
 	}
 	

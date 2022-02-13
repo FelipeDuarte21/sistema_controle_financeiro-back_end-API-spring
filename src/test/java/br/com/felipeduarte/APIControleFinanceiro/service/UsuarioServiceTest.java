@@ -29,7 +29,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
-import br.com.felipeduarte.APIControleFinanceiro.service.exception.NotFoundObjectToParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 class UsuarioServiceTest {
 
@@ -82,7 +82,7 @@ class UsuarioServiceTest {
 		
 		Mockito.when(usuarioRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
 		
-		assertThrows(NotFoundObjectToParameterException.class,() -> this.usuarioService.excluir(1L));
+		assertThrows(ObjectNotFoundFromParameterException.class,() -> this.usuarioService.excluir(1L));
 		
 	}
 	
