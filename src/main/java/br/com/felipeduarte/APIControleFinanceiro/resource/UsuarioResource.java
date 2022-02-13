@@ -26,6 +26,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
 import br.com.felipeduarte.APIControleFinanceiro.service.UsuarioService;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.NotFoundObjectToParameterException;
 
 @RestController
 @RequestMapping("/usuario")
@@ -63,13 +64,18 @@ public class UsuarioResource {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
 		
-		boolean resp = this.service.excluir(id);
+		try {
+			
+			this.service.excluir(id);
+			
+			return ResponseEntity.ok().build();
+			
+		}catch(NotFoundObjectToParameterException e){
+			
+			throw new ObjectNotFoundException(e.getMessage());
 		
-		if(resp == false) {
-			throw new ObjectBadRequestException("Erro! Usuário não cadastrado!");
 		}
-		
-		return ResponseEntity.status(HttpStatus.OK).build();
+	
 	}
 	
 	@PreAuthorize("hasAnyRole('ADMIN')")

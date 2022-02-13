@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -25,6 +28,8 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.NotFoundObjectToParameterException;
 
 class UsuarioServiceTest {
 
@@ -38,6 +43,9 @@ class UsuarioServiceTest {
 	
 	@Mock
 	private RestricaoService restricaoService;
+	
+	@Captor
+	private ArgumentCaptor<Usuario> captor;
 	
 	@BeforeEach
 	void inicializar() {
@@ -55,6 +63,54 @@ class UsuarioServiceTest {
 	void testandoFuncionamentoDoTeste0DiferenteDe0() {
 		assertNotEquals(0, 0);
 	}*/
+	
+	@Test
+	void excluindoUsuarioPeloIdQuandoUsuarioNaoForOUsuarioDoIdInformadoDeveLancarException() {
+		
+		Mockito.when(usuarioRepository.findById(Mockito.anyLong())).thenReturn(
+				Optional.of(getListaUsuarios().get(0)));
+
+		Mockito.when(restricaoService.verificarUsuario(Mockito.anyLong()))
+			.thenThrow(AuthorizationException.class);
+		
+		assertThrows(AuthorizationException.class, () -> this.usuarioService.excluir(1L));
+		
+	}
+	
+	@Test
+	void excluindoUsuarioPeloIdQuandoOProprioUsuarioEstiverLogadoDeveNaoConseguirExcluirQuandoIdNaoForEncontrado() {
+		
+		Mockito.when(usuarioRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+		
+		assertThrows(NotFoundObjectToParameterException.class,() -> this.usuarioService.excluir(1L));
+		
+	}
+	
+	@Test
+	void excluindoUsuarioPeloIdQuandoOProprioUsuarioEstiverLogadoDeveConseguirExcluirQuandoIdForEncontrado() {
+		
+		Mockito.when(usuarioRepository.findById(Mockito.anyLong())).thenReturn(
+				Optional.of(getListaUsuarios().get(0)));
+		
+		Mockito.when(restricaoService.getUsuario()).thenReturn(getListaUsuarios().get(0));
+		
+		try {
+			
+			this.usuarioService.excluir(1L);
+			
+			Mockito.verify(usuarioRepository).delete(captor.capture());
+			
+			Usuario usuarioCapturado = captor.getValue();
+			
+			assertEquals(1L, usuarioCapturado.getId());
+			
+			
+		}catch(IllegalParameterException e) {
+			fail("O usuario não foi encontrado pelo id");
+			
+		}
+		
+	}
 	
 	@Test
 	void buscandoUsuarioPeloIdDeveRetornarOUsuario() {
@@ -103,7 +159,7 @@ class UsuarioServiceTest {
 		
 	}
 	
-	void buscandoUsuarioPeloEmailVerificandoSeUsuarioEstaLogadoDeveLancarExceptionParaUsuarioNaoLogado() {
+	void buscandoUsuarioPeloEmailVerificandoSeUsuarioEstaLogadoDeveLancarException() {
 		
 		Mockito.when(usuarioRepository.findByEmail(Mockito.any()))
 			.thenReturn(Optional.of(getListaUsuarios().get(0)));
@@ -157,8 +213,8 @@ class UsuarioServiceTest {
 		var listaUsuarios = new ArrayList<Usuario>();
 		
 		listaUsuarios.add(new Usuario(1L,"Luiz","luiz@gmail.com","123456"));
-		listaUsuarios.add(new Usuario(2L,"Luiz","luiz@gmail.com","123456"));
-		listaUsuarios.add(new Usuario(3L,"Luiz","luiz@gmail.com","123456"));
+		listaUsuarios.add(new Usuario(2L,"Joao","joa@gmail.com","123456"));
+		listaUsuarios.add(new Usuario(3L,"Marcos","marcos@gmail.com","123456"));
 		
 		return listaUsuarios;
 	}

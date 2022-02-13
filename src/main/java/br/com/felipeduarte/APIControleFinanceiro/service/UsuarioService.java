@@ -17,6 +17,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.NotFoundObjectToParameterException;
 
 @Service
 public class UsuarioService {
@@ -91,19 +92,19 @@ public class UsuarioService {
 		
 	}
 	
-	public boolean excluir(Long id) {
+	public void excluir(Long id) {
 		
-		Optional<Usuario> usu = this.repository.findById(id);
+		var optUsuario = this.repository.findById(id);
 		
-		if(usu.isEmpty()) {
-			return false;
-		}
+		if(!optUsuario.isPresent()) 
+			throw new NotFoundObjectToParameterException(
+					"Erro! Usuário não encontrado a partir do id informado!");
 		
 		//Verifica se usuario é o mesmo que está logado
-		this.restricaoService.verificarUsuario(id);
+		this.restricaoService.verificarUsuario(optUsuario.get().getId());
 		
-		this.repository.delete(usu.get());
-		return true;
+		this.repository.delete(optUsuario.get());
+		
 	}
 	
 	public Optional<UsuarioDTO> buscarPorId(Long id) {

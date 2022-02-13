@@ -62,7 +62,7 @@ public class RestricaoService {
 		}
 	}
 	
-	public void verificarUsuario(Long idComparado) {
+	public boolean verificarUsuario(Long idComparado) {
 		
 		Usuario usuario = this.getUsuario();
 		
@@ -70,6 +70,7 @@ public class RestricaoService {
 			throw new AuthorizationException("Acesso Indevido!");
 		}
 		
+		return true;
 	}
 
 }
