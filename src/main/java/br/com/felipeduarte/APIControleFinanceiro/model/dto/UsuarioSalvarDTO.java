@@ -19,6 +19,16 @@ public class UsuarioSalvarDTO {
 	@NotNull(message = "Informe o campo senha")
 	@Length(min=8, max=15, message = "O campo senha deve ter entre {min} a {max} caracteres")
 	private String senha;
+	
+	public UsuarioSalvarDTO() {
+		
+	}
+
+	public UsuarioSalvarDTO(String nome,String email, String senha) {
+		this.nome = nome;
+		this.email = email;
+		this.senha = senha;
+	}
 
 	public String getNome() {
 		return nome;

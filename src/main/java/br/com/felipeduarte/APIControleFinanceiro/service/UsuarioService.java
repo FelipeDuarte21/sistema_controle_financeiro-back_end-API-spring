@@ -47,7 +47,7 @@ public class UsuarioService {
 		if(optUsuarioEmail.isPresent()) throw new IllegalParameterException("Erro! email já está em uso!");
 		
 		var usuario = new Usuario(usuarioDTO);
-		usuario.setSenha(this.bCrypt.encode(usuario.getSenha()));
+		usuario.setSenha(this.bCrypt.encode(usuarioDTO.getSenha()));
 		usuario.addTipo(TipoUsuario.USUARIO.getCodigo());
 		
 		usuario = this.repository.save(usuario);
@@ -74,12 +74,12 @@ public class UsuarioService {
 		
 		var optUsuarioEmail = this.repository.findByEmail(usuarioDTO.getEmail());
 		
-		if(optUsuarioEmail.isPresent() && !optUsuarioEmail.get().getId().equals(optUsuario.get().getId()))
+		if(optUsuarioEmail.isPresent() && !optUsuarioEmail.get().getId().equals(optUsuario.get().getId()) )
 			throw new IllegalParameterException("Erro! email já está em uso!");
 		
 		
 		var usuario = new Usuario(usuarioDTO);
-		usuario.setSenha(optUsuario.get().getSenha());
+		usuario.setSenha(bCrypt.encode(usuarioDTO.getSenha()));
 		usuario.addTipo(TipoUsuario.USUARIO.getCodigo());
 		
 		usuario = this.repository.save(usuario);
