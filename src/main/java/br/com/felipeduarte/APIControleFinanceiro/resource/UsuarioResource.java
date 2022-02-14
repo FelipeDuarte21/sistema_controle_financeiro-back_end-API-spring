@@ -1,7 +1,5 @@
 package br.com.felipeduarte.APIControleFinanceiro.resource;
 
-import java.net.URI;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +29,12 @@ import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoun
 @RequestMapping("/usuario")
 public class UsuarioResource {
 	
-	@Autowired
 	private UsuarioService service;
+	
+	@Autowired
+	public UsuarioResource(UsuarioService service) {
+		this.service = service;
+	}
 	
 	@PostMapping
 	public ResponseEntity<UsuarioDTO> salvar(@RequestBody @Valid UsuarioSalvarDTO usuarioDTO,
@@ -40,9 +42,9 @@ public class UsuarioResource {
 		
 		try {
 			
-			UsuarioDTO usuario = this.service.salvar(usuarioDTO);
+			var usuario = this.service.salvar(usuarioDTO);
 			
-			URI uri = uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
+			var uri = uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
 			
 			return ResponseEntity.created(uri).body(usuario);
 			
@@ -60,7 +62,7 @@ public class UsuarioResource {
 		
 		try {
 			
-			UsuarioDTO usuario = this.service.atualizar(id, usuarioDTO);
+			var usuario = this.service.atualizar(id, usuarioDTO);
 			
 			return ResponseEntity.ok(usuario);
 			
@@ -96,7 +98,7 @@ public class UsuarioResource {
 		
 		try {
 			
-			UsuarioDTO usuario = this.service.buscarPorId(id);
+			var usuario = this.service.buscarPorId(id);
 			
 			return ResponseEntity.ok(usuario);
 			
@@ -113,7 +115,7 @@ public class UsuarioResource {
 		
 		try {
 			
-			UsuarioDTO usuario = this.service.buscarPorEmail(email,true);
+			var usuario = this.service.buscarPorEmail(email,true);
 			
 			return ResponseEntity.ok(usuario);
 			
@@ -138,7 +140,7 @@ public class UsuarioResource {
 		
 		try {
 		
-			Page<UsuarioDTO> usuarios = this.service.listar(page, size, order);
+			var usuarios = this.service.listar(page, size, order);
 			
 			return ResponseEntity.ok(usuarios);
 			

@@ -3,10 +3,12 @@ package br.com.felipeduarte.APIControleFinanceiro.service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
@@ -14,136 +16,138 @@ import org.springframework.stereotype.Service;
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.CategoriaRepository;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
 public class CategoriaService {
 	
-	private static final String TIME_ZONE = "America/Sao_Paulo";
+	@Value("${time.zone}")
+	private String TIME_ZONE;
 	
-	@Autowired
 	private CategoriaRepository repository;
 	
-	@Autowired
 	private BalancoService balancoService;
 	
-	@Autowired
 	private RestricaoService restricaoService;
 	
-	public Categoria salvar(CategoriaDTO categoria) {
+	@Autowired
+	public CategoriaService(CategoriaRepository repository, BalancoService balancoService,
+			RestricaoService restricaoService) {
+		super();
+		this.repository = repository;
+		this.balancoService = balancoService;
+		this.restricaoService = restricaoService;
+	}
+
+	public CategoriaDTO salvar(CategoriaSalvarDTO categoriaDTO) {
 		//Obtem o usuário logado
 		Usuario usuario = this.restricaoService.getUsuario();
 		
-		Categoria cat = this.repository.findByNomeAndUsuario(categoria.getNome(),usuario);
+		var optCategoria = this.repository.findByNomeAndUsuario(categoriaDTO.getNome(),usuario);
 		
-		if(cat != null) {
-			return null;
-		}
+		if(optCategoria.isPresent()) throw new IllegalParameterException("Erro! categoria já cadastrada!");
 		
-		cat = Categoria.converteParaCategoria(categoria);
-		cat.setUsuario(usuario);
+		var categoria = new Categoria(categoriaDTO);
+		categoria.setUsuario(usuario);
+		categoria.setDataCadastro(LocalDate.now(ZoneId.of(TIME_ZONE)));
 		
-		//Tratando a data
-		cat.setDataCadastro(LocalDate.now(ZoneId.of(TIME_ZONE)));
+		categoria = this.repository.save(categoria);
 		
-		cat = this.repository.save(cat);
+		this.balancoService.cadastrar(categoria);
 		
-		this.balancoService.cadastrar(cat);
-		
-		return cat;
+		return new CategoriaDTO(categoria);
 	}
 	
-	public Categoria atualizar(CategoriaDTO categoria) {
+	public CategoriaDTO atualizar(Long id, CategoriaSalvarDTO categoriaDTO) {
 		
-		if(categoria.getId() == null) {
-			return null;
-		}
+		if(id == null) throw new IllegalParameterException("Erro! id não pode ser nullo");
+		if(id == 0) throw new IllegalParameterException("Erro! id não pode ser 0");
 		
-		Optional<Categoria> cat = this.repository.findById(categoria.getId());
+		var optCategoria = this.repository.findById(id);
 		
-		if(cat.isEmpty()) {
-			return null;
-		}
+		if(!optCategoria.isPresent())
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! categoria não econtrada para o id informado!");
 		
 		//Verifica se categoria pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(cat.get());
+		this.restricaoService.verificarPermissaoConteudo(optCategoria.get());
 		
-		Categoria c = Categoria.converteParaCategoria(categoria);
-		c.setUsuario(cat.get().getUsuario());
+		var categoria = optCategoria.get();
+		categoria.setNome(categoriaDTO.getNome());
+		categoria.setDescricao(categoriaDTO.getDescricao());
 		
-		c = this.repository.save(c);
-		return c;
+		categoria = this.repository.save(categoria);
+		
+		return new CategoriaDTO(categoria);
 	}
 	
-	public boolean excluir(Long id) {
+	public void excluir(Long id) {
 		
-		Optional<Categoria> cat = this.repository.findById(id);
+		var optCategoria = this.repository.findById(id);
 		
-		if(cat.isEmpty()) {
-			return false;
-		}
+		if(!optCategoria.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! categoria não econtrada para o id informado!");
 		
 		//Verifica se categoria pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(cat.get());
+		this.restricaoService.verificarPermissaoConteudo(optCategoria.get());
 		
-		this.repository.delete(cat.get());
-		return true;
+		this.repository.delete(optCategoria.get());
+		
 	}
 	
-	public Categoria buscarPorId(Long id) {
+	public CategoriaDTO buscarPorId(Long id) {
 		
-		Optional<Categoria> categoria = this.repository.findById(id);
+		var optCategoria = this.repository.findById(id);
 		
-		if(categoria.isEmpty()) {
-			return null;
-		}
+		if(!optCategoria.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! categoria não econtrada para o id informado!");
 		
 		//Verifica se categoria pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(categoria.get());
+		this.restricaoService.verificarPermissaoConteudo(optCategoria.get());
 		
-		return categoria.get();
+		return new CategoriaDTO(optCategoria.get());
 	}
 	
-	public List<Categoria> buscarPorUsuario(Usuario usuario) {
+	public List<CategoriaDTO> buscarPorUsuario(Usuario usuario) {
 		
-		List<Categoria> categorias = this.repository.findByUsuario(usuario);
+		var categorias = this.repository.findByUsuario(usuario);
 		
-		if(categorias.isEmpty()) return null;
+		if(categorias.isEmpty()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! Não existe categorias cadastradas para o usuario informado!");
 		
-		return categorias;
+		return categorias.stream().map(CategoriaDTO::new).collect(Collectors.toList());
 	}
 	
-	public Page<Categoria> listar(Integer page, Integer size, Integer order){
-		Direction d = Direction.ASC;
+	public Page<CategoriaDTO> listar(int page, int size, int order){
 		
-		if(order == 1) {
-			d = Direction.ASC;
-		}else if(order == 2) {
-			d = Direction.DESC;
-		}
+		if(page < 0) 
+			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
 		
-		PageRequest pageable = PageRequest.of(page, size,d,"nome");
+		if(size < 1) 
+			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
+		
+		var direction = Direction.ASC;
+		
+		if(order == 2) direction = Direction.DESC;
+		
+		var pageable = PageRequest.of(page, size,direction,"nome");
 		
 		//Obtem o usuário logado
-		Usuario usuario = this.restricaoService.getUsuario();
+		var usuario = this.restricaoService.getUsuario();
 		
-		Page<Categoria> categorias = this.repository.findByUsuario(usuario, pageable);
+		var pageCategorias = this.repository.findByUsuario(usuario, pageable);
 		
-		return categorias;
-	}
-	
-	public void abrirBalanco(){
+		var pageCategoriasDTO = new PageImpl<CategoriaDTO>(
+				pageCategorias.getContent().stream().map(CategoriaDTO::new).collect(Collectors.toList()),
+					pageCategorias.getPageable(),pageCategorias.getTotalElements());
 		
-		List<Categoria> categorias = this.repository.findAll();
-		
-		if(categorias != null) {
-			
-			categorias.forEach(categoria -> {
-				this.balancoService.cadastrar(categoria);
-			});
-			
-		}
-		
+		return pageCategoriasDTO;
 	}
 	
 }

@@ -78,9 +78,10 @@ public class UsuarioService {
 			throw new IllegalParameterException("Erro! email já está em uso!");
 		
 		
-		var usuario = new Usuario(usuarioDTO);
+		var usuario = optUsuario.get();
+		usuario.setNome(usuarioDTO.getNome());
+		usuario.setEmail(usuarioDTO.getEmail());
 		usuario.setSenha(bCrypt.encode(usuarioDTO.getSenha()));
-		usuario.addTipo(TipoUsuario.USUARIO.getCodigo());
 		
 		usuario = this.repository.save(usuario);
 		
@@ -149,7 +150,7 @@ public class UsuarioService {
 		
 		var pageUsuarioDTO = new PageImpl<UsuarioDTO>(
 				pageUsuarios.getContent().stream().map(UsuarioDTO::new).collect(Collectors.toList()),
-					pageUsuarios.getPageable(),pageUsuarios.getContent().size());
+					pageUsuarios.getPageable(),pageUsuarios.getTotalElements());
 		
 		return pageUsuarioDTO;
 		

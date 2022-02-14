@@ -17,8 +17,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 
 @Entity
@@ -35,14 +33,11 @@ public class Usuario implements Serializable{
 	
 	private String email;
 	
-	@JsonIgnore
 	private String senha;
 	
-	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Categoria> categorias = new ArrayList<>();
 	
-	@JsonIgnore
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "tipo_usuario")
 	private Set<Integer> tipo = new HashSet<>();

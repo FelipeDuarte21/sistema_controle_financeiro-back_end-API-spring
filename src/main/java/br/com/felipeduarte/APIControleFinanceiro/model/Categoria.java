@@ -16,9 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaSalvarDTO;
 
 @Entity
 @Table(name = "categoria")
@@ -34,17 +32,27 @@ public class Categoria implements Serializable {
 	private String descricao;
 	private LocalDate dataCadastro;
 	
-	@JsonIgnore
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_usuario")
 	private Usuario usuario;
 	
-	@JsonIgnore
 	@OneToMany(mappedBy = "categoria",fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	private List<Balanco> balancos = new ArrayList<>();
 	
 	public Categoria() {
 		
+	}
+
+	public Categoria(Long id, String nome, String descricao, LocalDate dataCadastro) {
+		this.id = id;
+		this.nome = nome;
+		this.descricao = descricao;
+		this.dataCadastro = dataCadastro;
+	}
+	
+	public Categoria(CategoriaSalvarDTO categoriaDTO) {
+		this.nome = categoriaDTO.getNome();
+		this.descricao = categoriaDTO.getDescricao();
 	}
 
 	public Long getId() {
@@ -118,15 +126,6 @@ public class Categoria implements Serializable {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
-	}
-	
-	public static Categoria converteParaCategoria(CategoriaDTO categoria) {
-		Categoria c = new  Categoria();
-		c.setId(categoria.getId());
-		c.setNome(categoria.getNome());
-		c.setDescricao(categoria.getDescricao());
-		c.setDataCadastro(categoria.getDataCadastro());
-		return c;
 	}
 
 }

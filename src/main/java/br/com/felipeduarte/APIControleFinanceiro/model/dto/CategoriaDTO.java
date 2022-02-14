@@ -2,21 +2,32 @@ package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
 import java.time.LocalDate;
 
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
+import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 
 public class CategoriaDTO {
 	
 	private Long id;
-	
-	@NotNull(message = "Informe o campo nome")
-	@Length(min=3,max=60, message = "O campo nome deve ter entre {min} e {max} caracteres")
 	private String nome;
-	
 	private String descricao;
-	
 	private LocalDate dataCadastro;
+	
+	public CategoriaDTO() {
+		
+	}
+
+	public CategoriaDTO(Long id, String nome, String descricao, LocalDate dataCadastro) {
+		this.id = id;
+		this.nome = nome;
+		this.descricao = descricao;
+		this.dataCadastro = dataCadastro;
+	}
+
+	public CategoriaDTO(Categoria categoria) {
+		this.id = categoria.getId();
+		this.nome = categoria.getNome();
+		this.descricao = categoria.getDescricao();
+		this.dataCadastro = categoria.getDataCadastro();
+	}
 
 	public Long getId() {
 		return id;

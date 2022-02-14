@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.CategoriaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
 public class RestricaoService {
@@ -46,20 +48,26 @@ public class RestricaoService {
 		
 		boolean resp = false;
 		
-		List<Categoria> categorias = this.categoriaService.buscarPorUsuario(usuario);
-		
-		if(categorias != null) {
-			for(Categoria cat: categorias) {
+		try {
+			
+			List<CategoriaDTO> categorias = this.categoriaService.buscarPorUsuario(usuario);
+			
+			for(CategoriaDTO cat: categorias) {
 				if(cat.getId().equals(categoria.getId())) {
 					resp = true;
 					break;
 				}
 			}
+			
+			if(resp == false) {
+				throw new AuthorizationException("Acesso Indevido!");
+			}
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new AuthorizationException("Acesso Indevido!");
+			
 		}
 		
-		if(resp == false) {
-			throw new AuthorizationException("Acesso Indevido!");
-		}
 	}
 	
 	public boolean verificarUsuario(Long idComparado) {
