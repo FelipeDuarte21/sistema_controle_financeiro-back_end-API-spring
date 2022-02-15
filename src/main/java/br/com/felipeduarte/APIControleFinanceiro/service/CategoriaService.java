@@ -1,12 +1,11 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +23,7 @@ import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoun
 @Service
 public class CategoriaService {
 	
-	@Value("${time.zone}")
-	private String TIME_ZONE;
+	private Clock clock;
 	
 	private CategoriaRepository repository;
 	
@@ -35,11 +33,11 @@ public class CategoriaService {
 	
 	@Autowired
 	public CategoriaService(CategoriaRepository repository, BalancoService balancoService,
-			RestricaoService restricaoService) {
-		super();
+			RestricaoService restricaoService, Clock clock) {
 		this.repository = repository;
 		this.balancoService = balancoService;
 		this.restricaoService = restricaoService;
+		this.clock = clock;
 	}
 
 	public CategoriaDTO salvar(CategoriaSalvarDTO categoriaDTO) {
@@ -52,7 +50,7 @@ public class CategoriaService {
 		
 		var categoria = new Categoria(categoriaDTO);
 		categoria.setUsuario(usuario);
-		categoria.setDataCadastro(LocalDate.now(ZoneId.of(TIME_ZONE)));
+		categoria.setDataCadastro(LocalDate.now(clock.getZone()));
 		
 		categoria = this.repository.save(categoria);
 		
