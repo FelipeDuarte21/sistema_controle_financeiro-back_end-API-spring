@@ -111,6 +111,20 @@ public class CategoriaService {
 		return new CategoriaDTO(optCategoria.get());
 	}
 	
+	public Categoria buscarPorIdInterno(Long id) {
+		
+		var optCategoria = this.repository.findById(id);
+		
+		if(!optCategoria.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! categoria não econtrada para o id informado!");
+		
+		//Verifica se categoria pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(optCategoria.get());
+		
+		return optCategoria.get();
+	}
+	
 	public List<CategoriaDTO> buscarPorUsuario(Usuario usuario) {
 		
 		var categorias = this.repository.findByUsuario(usuario);

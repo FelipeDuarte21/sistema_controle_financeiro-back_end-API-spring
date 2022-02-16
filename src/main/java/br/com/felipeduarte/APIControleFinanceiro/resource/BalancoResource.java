@@ -3,7 +3,6 @@ package br.com.felipeduarte.APIControleFinanceiro.resource;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoResumoDTO;
-import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoFaixaDTO;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.service.BalancoService;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 
 @RestController
 @RequestMapping("/balanco")
@@ -25,53 +25,59 @@ public class BalancoResource {
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/resumo")
-	public ResponseEntity<List<BalancoResumoDTO>> buscarTodosResumo(
+	public ResponseEntity<List<BalancoFaixaDTO>> buscarFaixas(
 			@RequestParam(name = "categoria") Long idCategoria,
 			@RequestParam(name = "ano") Integer ano, 
 			@RequestParam(name = "mes") Integer mes, 
 			@RequestParam(name = "qtdMes") Integer qtdMes){
 		
-		List<BalancoResumoDTO> balancosDTO = this.service.buscarTodosResumo(idCategoria,ano,mes,qtdMes);
-		
-		if(balancosDTO == null) {
-			throw new ObjectNotFoundException("Erro! Categoria não encontrado, balanco não encontrado ou quantidade "
-					+ "não é impar, verifique as informações");
+		try {
+			
+			var balancos = this.service.buscarFaixas(idCategoria, ano, mes, qtdMes);
+			
+			return ResponseEntity.ok(balancos);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
 		}
-		
-		return ResponseEntity.status(HttpStatus.OK).body(balancosDTO);
 		
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/atual")
-	public ResponseEntity<Balanco> recuperarAtual(@RequestParam(name = "categoria") Long idCategoria){
+	public ResponseEntity<BalancoDTO> recuperarAtual(@RequestParam(name = "categoria") Long idCategoria){
 		
-		Balanco balanco = this.service.recuperarAtual(idCategoria);
-		
-		if(balanco == null) {
-			throw new ObjectNotFoundException("Erro! Balanco não encontrado, "
-					+ "verifique o id da categoria informada!");
+		try {
+			
+			var balanco = this.service.recuperarAtual(idCategoria);
+			
+			return ResponseEntity.ok(balanco);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
 		}
-		
-		return ResponseEntity.status(HttpStatus.OK).body(balanco);
 		
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/data")
-	public ResponseEntity<Balanco> recuperarPorDate(
+	public ResponseEntity<BalancoDTO> buscarPorData(
 		@RequestParam(name = "categoria") Long idCategoria, 
 		@RequestParam Integer mes,
 		@RequestParam Integer ano){
 		
-		Balanco balanco = this.service.recuperarPorData(idCategoria, mes, ano);
-		
-		if(balanco == null) {
-			throw new ObjectNotFoundException("Erro! Balanco não encontrado, "
-					+ "verifique o id da categoria informada!");
+		try {
+			
+			var balanco = this.service.buscarPorData(idCategoria, mes, ano);
+			
+			return ResponseEntity.ok(balanco);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
 		}
-		
-		return ResponseEntity.status(HttpStatus.OK).body(balanco);
 		
 	}
 	

@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import javax.persistence.Column;
@@ -29,7 +30,7 @@ public class Lancamento implements Serializable{
 	
 	private String nome;
 	private String descricao;
-	private Double valor;
+	private BigDecimal valor;
 	
 	@Column(name = "data_cadastro")
 	private LocalDate dataCadastro;
@@ -73,11 +74,11 @@ public class Lancamento implements Serializable{
 		this.descricao = descricao;
 	}
 
-	public Double getValor() {
+	public BigDecimal getValor() {
 		return valor;
 	}
 
-	public void setValor(Double valor) {
+	public void setValor(BigDecimal valor) {
 		this.valor = valor;
 	}
 
