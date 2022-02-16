@@ -18,8 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 @Table(name = "balanco")
 public class Balanco implements Serializable{
@@ -45,7 +43,6 @@ public class Balanco implements Serializable{
 	@JoinColumn(name = "id_categoria")
 	private Categoria categoria;
 	
-	@JsonIgnore
 	@OneToMany(mappedBy = "balanco", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Lancamento> lancamentos = new ArrayList<>();
 	
@@ -120,6 +117,10 @@ public class Balanco implements Serializable{
 	
 	public void rmvLancamento(Lancamento lancamento) {
 		this.lancamentos.remove(lancamento);
+	}
+	
+	public void addLancamento(Lancamento lancamento) {
+		this.lancamentos.add(lancamento);
 	}
 
 	@Override

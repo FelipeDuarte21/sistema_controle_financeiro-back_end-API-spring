@@ -1,44 +1,46 @@
 package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
+import java.math.BigDecimal;
+
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
 public class TransferenciaDTO {
 	
-	@NotNull(message = "Informe o campo idCategoriaOrigem")
-	public Long idCategoriaOrigem;
+	@NotNull(message = "Informe o id da categoria de origem")
+	public Long categoriaOrigem;
 	
-	@NotNull(message = "Informe o campo idCategoriaDestino")
-	public Long idCategoriaDestino;
+	@NotNull(message = "Informe o id da categoria de destino")
+	public Long categoriaDestino;
 	
-	@NotNull(message = "Informe o campo nome")
+	@NotNull(message = "Informe o nome")
 	@Length(min=3,max=80,message = "O campo nome deverá ter entre {min} e {max} caracteres!")
 	public String nome;
 	
 	public String descricao;
 	
-	@NotNull(message = "Informe o campo valor")
-	public Double valor;
+	@NotNull(message = "Informe o valor")
+	public BigDecimal valor;
 	
 	public TransferenciaDTO() {
 		
 	}
 
-	public Long getIdCategoriaOrigem() {
-		return idCategoriaOrigem;
+	public Long getCategoriaOrigem() {
+		return categoriaOrigem;
 	}
 
-	public void setIdCategoriaOrigem(Long idCategoriaOrigem) {
-		this.idCategoriaOrigem = idCategoriaOrigem;
+	public void setCategoriaOrigem(Long categoriaOrigem) {
+		this.categoriaOrigem = categoriaOrigem;
 	}
 
-	public Long getIdCategoriaDestino() {
-		return idCategoriaDestino;
+	public Long getCategoriaDestino() {
+		return categoriaDestino;
 	}
 
-	public void setIdCategoriaDestino(Long idCategoriaDestino) {
-		this.idCategoriaDestino = idCategoriaDestino;
+	public void setCategoriaDestino(Long categoriaDestino) {
+		this.categoriaDestino = categoriaDestino;
 	}
 
 	public String getNome() {
@@ -57,11 +59,11 @@ public class TransferenciaDTO {
 		this.descricao = descricao;
 	}
 
-	public Double getValor() {
+	public BigDecimal getValor() {
 		return valor;
 	}
 
-	public void setValor(Double valor) {
+	public void setValor(BigDecimal valor) {
 		this.valor = valor;
 	}
 

@@ -63,7 +63,7 @@ public class BalancoService {
 			if(anoMes.equals(anoMesAgora)){
 				
 				var balancosIntervalo = 
-						this.repository.findByCategoriaAndMesAnoBetween(
+						this.repository.findByCategoriaAndMesAnoBetween(categoria,
 								anoMesAgora.minusMonths(qtdMes-1), anoMesAgora);
 				
 				balancos.addAll(balancosIntervalo);
@@ -74,11 +74,11 @@ public class BalancoService {
 				var metade = (qtdMes + 1 ) / 2;
 				
 				var balancosIntervaloAnterior = 
-						this.repository.findByCategoriaAndMesAnoBetween(
+						this.repository.findByCategoriaAndMesAnoBetween(categoria,
 								anoMes.minusMonths(metade-1), anoMes);
 				
 				var balancosIntervalorPosterior = 
-						this.repository.findByCategoriaAndMesAnoBetween(
+						this.repository.findByCategoriaAndMesAnoBetween(categoria,
 								anoMes.plusMonths(1L), anoMes.plusMonths(metade-1));
 				
 				balancos.addAll(balancosIntervaloAnterior);
@@ -105,6 +105,14 @@ public class BalancoService {
 	
 	public BalancoDTO recuperarAtual(Long idCategoria) {
 		
+		var balanco = recuperarAtualInterno(idCategoria);
+		
+		return new BalancoDTO(balanco);
+	
+	}
+	
+	public Balanco recuperarAtualInterno(Long idCategoria) {
+		
 		try {
 			
 			var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
@@ -113,7 +121,7 @@ public class BalancoService {
 			
 			var optBalanco = this.repository.findByCategoriaAndMesAno(categoria, mesAnoAgora);
 			
-			if(optBalanco.isPresent()) return new BalancoDTO(optBalanco.get());
+			if(optBalanco.isPresent()) return optBalanco.get();
 			
 			var balancoNovo = cadastrar(categoria);
 			
@@ -121,7 +129,7 @@ public class BalancoService {
 			
 			this.repository.save(optBalanco.get());
 			
-			return new BalancoDTO(balancoNovo);
+			return balancoNovo;
 			
 		}catch(ObjectNotFoundFromParameterException ex) {
 			throw new IllegalParameterException(ex.getMessage());
@@ -208,6 +216,10 @@ public class BalancoService {
 		
 		this.repository.save(balanco);
 		
+	}
+	
+	public void atulizarBalanco(Balanco balanco) {
+		this.repository.save(balanco);
 	}
 	
 }

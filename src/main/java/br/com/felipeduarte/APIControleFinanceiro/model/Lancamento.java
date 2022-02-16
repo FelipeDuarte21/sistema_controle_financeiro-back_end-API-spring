@@ -3,6 +3,7 @@ package br.com.felipeduarte.APIControleFinanceiro.model;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,9 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvarDTO;
 
 @Entity
 @Table(name = "lancamento")
@@ -32,12 +31,12 @@ public class Lancamento implements Serializable{
 	private String descricao;
 	private BigDecimal valor;
 	
-	@Column(name = "data_cadastro")
-	private LocalDate dataCadastro;
+	@Column(name = "data_lancamento")
+	private LocalDate dataLancamento;
 	
-	private Boolean sugestao;
+	@Column(name = "data_registro")
+	private LocalDateTime dataRegistro;
 	
-	@JsonIgnore
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_balanco")
 	private Balanco balanco;
@@ -48,6 +47,24 @@ public class Lancamento implements Serializable{
 	
 	public Lancamento() {
 		
+	}
+
+	public Lancamento(Long id, String nome, String descricao, BigDecimal valor, LocalDate dataLancamento,
+			LocalDateTime dataRegistro, TipoLancamento tipo) {
+		this.id = id;
+		this.nome = nome;
+		this.descricao = descricao;
+		this.valor = valor;
+		this.dataLancamento = dataLancamento;
+		this.dataRegistro = dataRegistro;
+		this.tipo = tipo;
+	}
+
+	public Lancamento(LancamentoSalvarDTO lancamentoDTO) {
+		this.nome = lancamentoDTO.getNome();
+		this.descricao = lancamentoDTO.getDescricao();
+		this.valor = lancamentoDTO.getValor();
+		this.dataLancamento = lancamentoDTO.getData();
 	}
 
 	public Long getId() {
@@ -82,20 +99,20 @@ public class Lancamento implements Serializable{
 		this.valor = valor;
 	}
 
-	public LocalDate getDataCadastro() {
-		return dataCadastro;
+	public LocalDate getDataLancamento() {
+		return dataLancamento;
 	}
 
-	public void setDataCadastro(LocalDate dataCadastro) {
-		this.dataCadastro = dataCadastro;
+	public void setDataLancamento(LocalDate dataLancamento) {
+		this.dataLancamento = dataLancamento;
 	}
 
-	public Boolean getSugestao() {
-		return sugestao;
+	public LocalDateTime getDataRegistro() {
+		return dataRegistro;
 	}
 
-	public void setSugestao(Boolean sugestao) {
-		this.sugestao = sugestao;
+	public void setDataRegistro(LocalDateTime dataRegistro) {
+		this.dataRegistro = dataRegistro;
 	}
 
 	public Balanco getBalanco() {
@@ -137,17 +154,6 @@ public class Lancamento implements Serializable{
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
-	}
-	
-	public static Lancamento converteParaLancamento(LancamentoDTO lancamento) {
-		Lancamento lan = new Lancamento();
-		lan.setId(lancamento.getId());
-		lan.setNome(lancamento.getNome());
-		lan.setDescricao(lancamento.getDescricao());
-		lan.setValor(lancamento.getValor());
-		lan.setDataCadastro(lancamento.getDataCadastro());
-		lan.setSugestao(lancamento.getSugestao());
-		return lan;
 	}
 
 }

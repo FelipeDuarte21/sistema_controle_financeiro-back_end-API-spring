@@ -54,7 +54,7 @@ class CategoriaServiceTest {
 	@BeforeEach
 	private void inicialiar() {
 		MockitoAnnotations.openMocks(this);
-		this.service = new CategoriaService(categoriaRepository,balancoService,restricaoService,clock);
+		this.service = new CategoriaService(categoriaRepository,clock,restricaoService);
 		Mockito.when(restricaoService.getUsuario()).thenReturn(getUsuario());
 	}
 	

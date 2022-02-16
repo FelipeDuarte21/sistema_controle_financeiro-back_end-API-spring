@@ -18,58 +18,69 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.ArquivoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.TransferenciaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
-import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotContentException;
+import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
 import br.com.felipeduarte.APIControleFinanceiro.service.LancamentoService;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @RestController
 @RequestMapping("/lancamento")
 public class LancamentoResource {
 	
-	@Autowired
 	private LancamentoService service;
+	
+	@Autowired
+	public LancamentoResource(LancamentoService service) {
+		this.service = service;
+	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@PostMapping
-	public ResponseEntity<Lancamento> salvar(@RequestBody @Valid LancamentoDTO lancamento){
+	public ResponseEntity<LancamentoDTO> salvar(@RequestParam(name = "balanco") Long idBalanco, 
+			@RequestBody @Valid LancamentoSalvarDTO lancamentoDTO, UriComponentsBuilder uriBuilder){
 		
-		Lancamento lan = this.service.salvar(lancamento);
-		
-		if(lan == null) {
-			throw new ObjectBadRequestException("Erro! Verifique as informações fornecidas!");
+		try {
+			
+			var lancamento = this.service.salvar(idBalanco,lancamentoDTO);
+			
+			var uri = uriBuilder.path("/lancamento/{id}").buildAndExpand(lancamento.getId()).toUri();
+			
+			return ResponseEntity.created(uri).body(lancamento);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
 		}
 		
-		return ResponseEntity.status(HttpStatus.CREATED).body(lan);
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
-	@PostMapping("/transferencia")
-	public ResponseEntity<?> transferir(@RequestBody @Valid TransferenciaDTO transferencia){
+	@PutMapping("/{id}")
+	public ResponseEntity<LancamentoDTO> atualizar(@PathVariable("id") Long id, 
+			@RequestBody @Valid LancamentoSalvarDTO lancamentoDTO){
 		
-		boolean resp = this.service.tranferir(transferencia);
-		
-		if(resp == false) throw new ObjectBadRequestException("Erro! Transferência não concluída");
-		
-		return ResponseEntity.status(HttpStatus.OK).build();
-		
-	}
-	
-	@PreAuthorize("hasAnyRole('USER')")
-	@PutMapping
-	public ResponseEntity<Lancamento> atualizar(@RequestBody @Valid LancamentoDTO lancamento){
-		
-		Lancamento lan = this.service.alterar(lancamento);
-		
-		if(lan == null) {
-			throw new ObjectBadRequestException("Erro! Verifique as informações fornecidas!");
+		try {
+			
+			var lancamento = this.service.alterar(id,lancamentoDTO);
+			
+			return ResponseEntity.ok(lancamento);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
+			
 		}
-		
-		return ResponseEntity.status(HttpStatus.OK).body(lan);
 		
 	}
 	
@@ -77,65 +88,95 @@ public class LancamentoResource {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
 		
-		boolean resp = this.service.excluir(id);
-		
-		if(resp == false) {
-			throw new ObjectBadRequestException("Erro! Lançamento não encontrado!");
+		try {
+			
+			this.service.excluir(id);
+			
+			return ResponseEntity.ok().build();
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
+			
 		}
 		
-		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/{id}")
-	public ResponseEntity<Lancamento> buscarPorId(@PathVariable Long id){
+	public ResponseEntity<LancamentoDTO> buscarPorId(@PathVariable Long id){
 		
-		Lancamento lancamento = this.service.buscarPorId(id);
-		
-		if(lancamento == null) {
-			throw new ObjectNotContentException("Erro! Lançamento não encontrado!");
+		try {
+			
+			var lancamento = this.service.buscarPorId(id);
+			
+			return ResponseEntity.ok(lancamento);
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
+			
 		}
-		
-		return ResponseEntity.status(HttpStatus.OK).body(lancamento);
 		
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/balanco")
-	public ResponseEntity<Page<Lancamento>> buscarPorBalanco(
+	@GetMapping
+	public ResponseEntity<Page<LancamentoDTO>> listar(
 			@RequestParam(name = "balanco") Long idBalanco,
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "6") Integer size,
 			@RequestParam(defaultValue = "2") Integer order
 		){
 		
-		Page<Lancamento> lancamentos = this.service.buscarPorBalanco(idBalanco, page, size, order);
+		try {
+			
+			Page<LancamentoDTO> lancamentos = this.service.listar(idBalanco, page, size, order);
 		
-		if(lancamentos == null) {
-			throw new ObjectBadRequestException("Erro! verifique os dados informados!");
+			return ResponseEntity.ok(lancamentos);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
 		}
-		
-		return ResponseEntity.status(HttpStatus.OK).body(lancamentos);
 		
 	}
 	
-	//@PreAuthorize("hasAnyRole('USER')")
+	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(value = "/arquivo", produces = "text/csv")
 	public ResponseEntity<Resource> gerarArquivoCSV(@RequestParam(name = "balanco") Long idBalanco){
 		
-		ArquivoDTO arquivoDTO = this.service.gerarArquivoCSV(idBalanco);
-		
-		if(arquivoDTO == null) throw new ObjectBadRequestException("Erro ao tentar recuperar arquivo csv!");
-		
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + arquivoDTO.getNomeArquivo());
-	    headers.set(HttpHeaders.CONTENT_TYPE, "text/csv");
-	    headers.add("file_name", arquivoDTO.getNomeArquivo());
+		try {
+			
+			var arquivoDTO = this.service.gerarArquivoCSV(idBalanco);
+			
+		    var headers = new HttpHeaders();
+		    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + arquivoDTO.getNomeArquivo());
+		    headers.set(HttpHeaders.CONTENT_TYPE, "text/csv");
+		    headers.add("file_name", arquivoDTO.getNomeArquivo());
 
-	    return new ResponseEntity<>(arquivoDTO.getArquivo(),headers,HttpStatus.OK);
+		    return new ResponseEntity<>(arquivoDTO.getArquivo(),headers,HttpStatus.OK);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}
 		
 	}
 	
-	
+	@PreAuthorize("hasAnyRole('USER')")
+	@PostMapping("/transferencia")
+	public ResponseEntity<?> transferir(@RequestBody @Valid TransferenciaDTO transferencia){
+		
+		try {
+			
+			this.service.tranferir(transferencia);
+			
+			return ResponseEntity.ok().build();
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}
+		
+	}
 	
 }

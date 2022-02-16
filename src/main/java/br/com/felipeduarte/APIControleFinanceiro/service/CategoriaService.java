@@ -27,17 +27,13 @@ public class CategoriaService {
 	
 	private CategoriaRepository repository;
 	
-	private BalancoService balancoService;
-	
 	private RestricaoService restricaoService;
 	
 	@Autowired
-	public CategoriaService(CategoriaRepository repository, BalancoService balancoService,
-			RestricaoService restricaoService, Clock clock) {
+	public CategoriaService(CategoriaRepository repository, Clock clock, RestricaoService restricaoService) {
 		this.repository = repository;
-		this.balancoService = balancoService;
-		this.restricaoService = restricaoService;
 		this.clock = clock;
+		this.restricaoService = restricaoService;
 	}
 
 	public CategoriaDTO salvar(CategoriaSalvarDTO categoriaDTO) {
@@ -53,8 +49,6 @@ public class CategoriaService {
 		categoria.setDataCadastro(LocalDate.now(clock.getZone()));
 		
 		categoria = this.repository.save(categoria);
-		
-		this.balancoService.cadastrar(categoria);
 		
 		return new CategoriaDTO(categoria);
 	}
@@ -161,5 +155,6 @@ public class CategoriaService {
 		
 		return pageCategoriasDTO;
 	}
+	
 	
 }

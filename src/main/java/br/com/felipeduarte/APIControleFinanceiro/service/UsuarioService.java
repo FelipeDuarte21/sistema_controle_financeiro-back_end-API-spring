@@ -34,7 +34,6 @@ public class UsuarioService {
 	@Autowired
 	public UsuarioService(UsuarioRepository repository, BCryptPasswordEncoder bCrypt,
 			RestricaoService restricaoService) {
-		
 		this.repository = repository;
 		this.bCrypt = bCrypt;
 		this.restricaoService = restricaoService;

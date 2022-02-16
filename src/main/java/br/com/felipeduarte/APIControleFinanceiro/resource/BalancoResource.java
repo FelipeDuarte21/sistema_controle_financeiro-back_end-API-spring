@@ -20,11 +20,15 @@ import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParame
 @RequestMapping("/balanco")
 public class BalancoResource {
 	
-	@Autowired
 	private BalancoService service;
 	
+	@Autowired
+	public BalancoResource(BalancoService service) {
+		this.service = service;
+	}
+	
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/resumo")
+	@GetMapping("/faixa")
 	public ResponseEntity<List<BalancoFaixaDTO>> buscarFaixas(
 			@RequestParam(name = "categoria") Long idCategoria,
 			@RequestParam(name = "ano") Integer ano, 

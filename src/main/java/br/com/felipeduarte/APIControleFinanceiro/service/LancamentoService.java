@@ -4,14 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDate;
+import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
@@ -21,208 +20,201 @@ import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
-import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
-import br.com.felipeduarte.APIControleFinanceiro.model.TipoLancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ArquivoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.TransferenciaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
 import br.com.felipeduarte.APIControleFinanceiro.repository.LancamentoRepository;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
 public class LancamentoService {
 	
-	private static final String TIME_ZONE = "America/Sao_Paulo";
+	private Clock clock;
 	
-	@Autowired
 	private LancamentoRepository repository;
 	
-	@Autowired
 	private BalancoService balancoService;
 	
-	@Autowired
 	private TipoLancamentoService tipoLancamentoService;
 	
-	@Autowired
 	private RestricaoService restricaoService;
-	
-	
-	public Lancamento salvar(LancamentoDTO lancamento) {
-		
-		Balanco balanco = this.balancoService.buscarPorId(lancamento.getBalanco());
-		if(balanco == null || balanco.getFechado()) {
-			return null;
-		}
-		
-		if(balanco.getFechado()) return null;
-		
-		TipoLancamento tipoLancamento = this.tipoLancamentoService.buscarPorValor(lancamento.getTipo());
-		if(tipoLancamento == null) {
-			return null;
-		}
-		
-		//Verifica se a categoria do balanco pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
-		
-		Lancamento lan = Lancamento.converteParaLancamento(lancamento);
-		
-		lan.setTipo(tipoLancamento);
-		lan.setBalanco(balanco);
-		
-		//Tratando a data
-		if(lan.getDataCadastro() == null) {
-			lan.setDataCadastro(LocalDate.now(ZoneId.of(TIME_ZONE)));
-		}
-		
-		lan = this.repository.save(lan);
-		
-		this.balancoService.atualizarSaldo(lan.getBalanco());
-		
-		return lan;
-	}
-	
-	@Transactional(value = TxType.REQUIRES_NEW, rollbackOn = Exception.class)
-	public boolean tranferir(TransferenciaDTO transferencia) {
-		
-		Balanco balOrigem = this.balancoService.recuperarAtual(transferencia.idCategoriaOrigem);
-		
-		Balanco balDestino = this.balancoService.recuperarAtual(transferencia.idCategoriaDestino);
-		
-		LancamentoDTO lancamento = new LancamentoDTO();
-		lancamento.setNome(transferencia.getNome());
-		
-		lancamento.setValor(transferencia.getValor());
-		lancamento.setSugestao(false);
-		
-		//Parametros da categoria de origem
-		lancamento.setDescricao(transferencia.getDescricao() + " - Transferência Destino: " 
-				+ balDestino.getCategoria().getNome());
-		lancamento.setBalanco(balOrigem.getId());
-		lancamento.setTipo(TipoLancamentoEnum.DESPESA.getValor());
-		
-		//Fazendo Transferência/lançamento no balanço atual da categoria de origem
-		Lancamento retornoOrigem = this.salvar(lancamento);
-		if(retornoOrigem == null) 
-			throw new RuntimeException("Erro ao tentar transferir da categoria de origem!");
-	
-		//Parametros da categoria de destino
-		lancamento.setDescricao(transferencia.getDescricao() + " - Transferência Origem: " 
-				+ balOrigem.getCategoria().getNome());
-		lancamento.setBalanco(balDestino.getId());
-		lancamento.setTipo(TipoLancamentoEnum.PROVENTO.getValor());
-		
-		//Fazendo Transferência/lançamento no balanço atual da categoria de destino
-		Lancamento retornoDestino = this.salvar(lancamento);
-		if(retornoDestino == null) 
-			throw new RuntimeException("Erro ao tentar transferir para a categoria de destino!");
 
-		return true;
+	
+	@Autowired
+	public LancamentoService(Clock clock, LancamentoRepository repository, BalancoService balancoService,
+			TipoLancamentoService tipoLancamentoService, RestricaoService restricaoService) {
+		this.clock = clock;
+		this.repository = repository;
+		this.balancoService = balancoService;
+		this.tipoLancamentoService = tipoLancamentoService;
+		this.restricaoService = restricaoService;
+	}
+
+	public LancamentoDTO salvar(Long idBalanco, LancamentoSalvarDTO lancamentoDTO) {
+		
+		var balanco = this.balancoService.buscarPorId(idBalanco);
+		
+		//Verifica se o balanço pertence ao usuario
+		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
+		
+		if(balanco.getFechado()) 
+			throw new IllegalParameterException(
+					"Erro! o balanço do lançamento já está fechado!");
+		
+		var tipoLancamento = 
+				this.tipoLancamentoService.buscarPorValor(lancamentoDTO.getTipo());
+	
+		var lancamento = new Lancamento(lancamentoDTO);
+		lancamento.setTipo(tipoLancamento);
+		lancamento.setBalanco(balanco);
+		lancamento.setDataRegistro(LocalDateTime.now(clock.getZone()));
+		
+		lancamento = this.repository.save(lancamento);
+		
+		balanco.addLancamento(lancamento);
+		this.balancoService.atualizarSaldo(balanco);
+		this.balancoService.atulizarBalanco(balanco);
+		
+		return new LancamentoDTO(lancamento);
 	}
 	
-	public Lancamento alterar(LancamentoDTO lancamento) {
+	public LancamentoDTO alterar(Long id, LancamentoSalvarDTO lancamentoDTO) {
 		
-		if(lancamento.getId() == null || lancamento.getId() == 0) {
-			return null;
-		}
+		if(id == null) throw new IllegalParameterException("Erro! id não pode ser nullo");
+		if(id == 0) throw new IllegalParameterException("Erro! id não pode ser 0");
 		
-		Lancamento lan = this.buscarPorId(lancamento.getId());
-		if(lan == null) {
-			return null;
-		}
+		var optLancamento = this.repository.findById(id);
 		
-		lan = this.salvar(lancamento);
+		if(!optLancamento.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! lançamento não encontrado para o id informado!");
 		
-		return lan;
+		//Verifica se o lançamento pertence ao usuario
+		this.restricaoService.verificarPermissaoConteudo(optLancamento.get().getBalanco().getCategoria());
+		
+		var lancamento = optLancamento.get();
+		lancamento.setNome(lancamentoDTO.getNome());
+		lancamento.setDescricao(lancamentoDTO.getDescricao());
+		lancamento.setValor(lancamentoDTO.getValor());
+		lancamento.setDataLancamento(lancamentoDTO.getData());
+		
+		var tipo = this.tipoLancamentoService.buscarPorValor(lancamentoDTO.getTipo());
+		
+		lancamento.setTipo(tipo);
+		
+		lancamento = this.repository.save(lancamento);
+		
+		var balanco = optLancamento.get().getBalanco();
+		balanco.rmvLancamento(optLancamento.get());
+		balanco.addLancamento(lancamento);
+		this.balancoService.atualizarSaldo(balanco);
+		this.balancoService.atulizarBalanco(balanco);
+		
+		return new LancamentoDTO(lancamento);
 	}
 	
-	public boolean excluir(Long id) {
+	public void excluir(Long id) {
 		
-		Lancamento lancamento = this.buscarPorId(id);
+		var optLancamento = this.repository.findById(id);
 		
-		if(lancamento == null || lancamento.getBalanco().getFechado()) {
-			return false;
-		}
+		if(!optLancamento.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro!  lançamento não encontrado para o id informado!");
 		
-		Balanco balanco = lancamento.getBalanco();
+		
+		var balanco = optLancamento.get().getBalanco();
+		
+		if(balanco.getFechado())
+			throw new IllegalParameterException("Erro! o balanço do lançamento já está fechado!");
 		
 		//Verifica se a categoria do balanco pertence ao usuario logado
 		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
 		
-		this.repository.delete(lancamento);
+		this.repository.delete(optLancamento.get());
 		
-		balanco.rmvLancamento(lancamento);
+		balanco.rmvLancamento(optLancamento.get());
 		
 		this.balancoService.atualizarSaldo(balanco);
 		
-		return true;
 	}
 	
-	public Lancamento buscarPorId(Long id) {
+	public LancamentoDTO buscarPorId(Long id) {
 		
-		Optional<Lancamento> lancamento = this.repository.findById(id);
+		var optLancamento = this.repository.findById(id);
 		
-		if(lancamento.isEmpty()) {
-			return null;
-		}
+		if(!optLancamento.isPresent()) throw new 
+			ObjectNotFoundFromParameterException("Erro! lançamento não encontrado para o id informado!");
 		
 		//Verifica se a categoria do balanco pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(lancamento.get().getBalanco().getCategoria());
+		this.restricaoService.verificarPermissaoConteudo(optLancamento.get().getBalanco().getCategoria());
 		
-		return lancamento.get();
+		return new LancamentoDTO(optLancamento.get());
+		
 	}
 	
-	public Page<Lancamento> buscarPorBalanco(Long idBalanco, Integer page, Integer size, Integer order) {
+	public Page<LancamentoDTO> listar(Long idBalanco, Integer page, Integer size, Integer order) {
 		
-		Balanco balanco = this.balancoService.buscarPorId(idBalanco);
+		if(page < 0) 
+			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
 		
-		if(balanco == null) {
-			return null;
+		if(size < 1) 
+			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
+		
+		try {
+			
+			var balanco = this.balancoService.buscarPorId(idBalanco);
+			
+			//Verifica se a categoria do balanco pertence ao usuario logado
+			this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
+			
+			var direction = Direction.ASC;
+			
+			if(order == 2) direction = Direction.DESC;
+			
+			var pageable = PageRequest.of(page, size,direction,"id");
+			
+			var lancamentos = this.repository.findByBalanco(balanco, pageable);
+			
+			var pageLancamentosDTO = new PageImpl<LancamentoDTO>(
+					lancamentos.getContent().stream().map(LancamentoDTO::new).collect(Collectors.toList()),
+					lancamentos.getPageable(),lancamentos.getTotalElements()); 
+			
+			return pageLancamentosDTO;
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new IllegalParameterException(ex.getMessage());
+			
 		}
-		
-		//Verifica se a categoria do balanco pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
-		
-		Direction d = Direction.DESC;
-		
-		if(order == 1) {
-			d = Direction.ASC;
-		}else if(order == 2) {
-			d = Direction.DESC;
-		}
-		
-		PageRequest pageable = PageRequest.of(page, size, d, "id");
-		
-		Page<Lancamento> lancamentos = this.repository.findByBalanco(balanco, pageable);
-		
-		return lancamentos;
 		
 	}
 	
 	public ArquivoDTO gerarArquivoCSV(Long idBalanco) {
 		
-		Balanco balanco = this.balancoService.buscarPorId(idBalanco);
-		
-		if(balanco == null) {
-			return null;
-		}
+		var balanco = this.balancoService.buscarPorId(idBalanco);
 		
 		//Verifica se a categoria do balanco pertence ao usuario logado
 		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
 		
-		List<Lancamento> lancamentos = this.repository.findByBalanco(balanco);
+		var lancamentos = this.repository.findByBalanco(balanco);
 		
-		String campos[] = {"Data","Tipo","Valor","Nome","Descricao","Saldo Anterior","Saldo Atual"};
+		String campos[] = {"Data","Tipo","Valor","Nome","Descricao","Data Registro",
+				"Saldo Anterior","Saldo Atual"};
 		
-		List<List<String>> dados = new ArrayList<>();
+		var dados = new ArrayList<List<String>>();
 		
 		for(Lancamento l: lancamentos) {
-			dados.add(Arrays.asList(l.getDataCadastro().toString(),l.getTipo().getNome(),
-					l.getValor().toString(),l.getNome(),l.getDescricao(), "-","-"));
+			dados.add(Arrays.asList(l.getDataRegistro().toString(),l.getTipo().getNome(),
+					l.getValor().toString(),l.getNome(),l.getDescricao(), 
+						l.getDataRegistro().toString(),"-","-"));
 		}
 		
 		dados.add(Arrays.asList("-","-","-","-","-",balanco.getSaldoAnterior().toString(),
@@ -232,12 +224,12 @@ public class LancamentoService {
 
 		try{
 	    	
-	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
-	        CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out),
+	    	var out = new ByteArrayOutputStream();
+	        var csvPrinter = new CSVPrinter(new PrintWriter(out),
 	        		CSVFormat.EXCEL.withDelimiter(';').withHeader(campos));
 	        
-	        for (List<String> dado : dados) {
-	            csvPrinter.printRecord(dado);
+	        for(List<String> dado: dados) {
+	        	csvPrinter.printRecord(dado);
 	        }
 
 	        csvPrinter.flush();
@@ -245,24 +237,53 @@ public class LancamentoService {
 	        byteArrayOutputStream = new ByteArrayInputStream(out.toByteArray());
 	    
 	    } catch (IOException e) {
-	        System.err.println("Erro ao tentar gerar arquivo csv: " + e.getMessage());
-	        return null;
+	        throw new IllegalParameterException(
+	        		"Erro ao tentar gerar arquivo csv: " + e.getMessage());
 	    }
 
-	    InputStreamResource fileInputStream = new InputStreamResource(byteArrayOutputStream);
+	    var fileInputStream = new InputStreamResource(byteArrayOutputStream);
 	    
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy_HH:mm:ss");
+	    var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy_HH:mm:ss");
 	  
-	    String nomeArquivo = String.format("%s_%s_%s_%s.csv", balanco.getMes(), balanco.getAno(),
-	    		balanco.getCategoria().getNome().replaceAll(" ", "-"), 
-	    			LocalDateTime.now(ZoneId.of(TIME_ZONE)).format(formatter).toString());
+	    var nomeArquivo = String.format("%s_%s_%s_%s.csv", balanco.getMesAno().getMonth().getValue(), 
+	    		balanco.getMesAno().getYear(),balanco.getCategoria().getNome().replaceAll(" ", "-"), 
+	    			LocalDateTime.now(clock.getZone()).format(formatter).toString());
 	 
-	    ArquivoDTO arquivoDTO = new ArquivoDTO();
+	    var arquivoDTO = new ArquivoDTO();
 	    arquivoDTO.setNomeArquivo(nomeArquivo);
 	    arquivoDTO.setArquivo(fileInputStream);
 	    
 	    return arquivoDTO;
 	    
+	}
+	
+	@Transactional(value = TxType.REQUIRES_NEW, rollbackOn = Exception.class)
+	public void tranferir(TransferenciaDTO transferencia) {
+		
+		var balOrigem = this.balancoService.recuperarAtualInterno(transferencia.getCategoriaOrigem());
+		
+		var balDestino = this.balancoService.recuperarAtualInterno(transferencia.getCategoriaDestino());
+		
+		//Transferencia da Origem
+		var lancamentoOrigem = new LancamentoSalvarDTO();
+		lancamentoOrigem.setNome(transferencia.getNome());
+		lancamentoOrigem.setValor(transferencia.getValor());
+		lancamentoOrigem.setDescricao(transferencia.getDescricao() 
+				+ " - Transferência Destino: " + balDestino.getCategoria().getNome());
+		lancamentoOrigem.setTipo(TipoLancamentoEnum.DESPESA.getValor());
+		
+		this.salvar(balOrigem.getId(), lancamentoOrigem);
+	
+		//Transferencia para o Destino
+		var lancamentoDestino = new LancamentoSalvarDTO();
+		lancamentoDestino.setNome(transferencia.getNome());
+		lancamentoDestino.setValor(transferencia.getValor());
+		lancamentoDestino.setDescricao(transferencia.getDescricao() 
+				+ " - Transferência Origem: " + balOrigem.getCategoria().getNome());
+		lancamentoDestino.setTipo(TipoLancamentoEnum.PROVENTO.getValor());
+		
+		this.salvar(balDestino.getId(), lancamentoDestino);
+
 	}
 	
 }

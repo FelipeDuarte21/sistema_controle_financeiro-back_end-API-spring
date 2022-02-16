@@ -110,8 +110,8 @@ public class UsuarioResource {
 	}
 	
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/email")
-	public ResponseEntity<UsuarioDTO> buscarPorEmail(@RequestParam String email){
+	@GetMapping("/email/{valor}")
+	public ResponseEntity<UsuarioDTO> buscarPorEmail(@PathVariable(name = "valor") String email){
 		
 		try {
 			

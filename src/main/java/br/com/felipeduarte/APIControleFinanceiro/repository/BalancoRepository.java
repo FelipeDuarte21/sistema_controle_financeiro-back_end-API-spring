@@ -14,6 +14,6 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 public interface BalancoRepository extends JpaRepository<Balanco, Long> {
 	
 	public Optional<Balanco> findByCategoriaAndMesAno(Categoria categoria, YearMonth mesAno);
-	public List<Balanco> findByCategoriaAndMesAnoBetween(YearMonth de, YearMonth ate);
+	public List<Balanco> findByCategoriaAndMesAnoBetween(Categoria categoria, YearMonth de, YearMonth ate);
 	
 }

@@ -1,40 +1,44 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.TipoLancamento;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.TipoLancamentoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.TipoLancamentoRepository;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
 public class TipoLancamentoService {
 	
-	@Autowired
 	private TipoLancamentoRepository repository;
 	
-	public List<TipoLancamento> listar(){
+	@Autowired
+	public TipoLancamentoService(TipoLancamentoRepository repository) {
+		this.repository = repository;
+	}
+	
+	public List<TipoLancamentoDTO> listar(){
 		
-		List<TipoLancamento> tipos = this.repository.findAll();
+		var tiposLancamentos = this.repository.findAll();
 		
-		if(tipos.isEmpty() || tipos == null) {
-			return null;
-		}
+		return tiposLancamentos.stream().map(TipoLancamentoDTO::new).collect(Collectors.toList());
 		
-		return tipos;
 	}
 	
 	public TipoLancamento buscarPorValor(Integer valor) {
 		
-		Optional<TipoLancamento> tl = this.repository.findByValor(valor);
+		var optTipoLancamento = this.repository.findByValor(valor);
 		
-		if(tl.isEmpty()) {
-			return null;
-		}
+		if(!optTipoLancamento.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! tipo de lançamento não encontrado para o id informado!");
 		
-		return tl.get();
+		return optTipoLancamento.get();
+		
 	}
 	
 }
