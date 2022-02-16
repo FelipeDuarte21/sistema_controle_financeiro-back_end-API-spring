@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>br.com.felipeduarte</groupId>
 	<artifactId>APIControleFinanceiro</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>2.0.0-SNAPSHOT</version>
 	<name>APIControleFinanceiro</name>
-	<description>Back-end baseado em API(web-service) para o sistema de controle financeiro</description>
+	<description>Back-end baseado em API para o Sistema de Controle Financeiro</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
