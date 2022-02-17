@@ -34,6 +34,13 @@ public class TipoLancamento implements Serializable {
 		
 	}
 
+	public TipoLancamento(Long id, Integer valor, String nome) {
+		super();
+		this.id = id;
+		this.valor = valor;
+		this.nome = nome;
+	}
+
 	public Long getId() {
 		return id;
 	}
