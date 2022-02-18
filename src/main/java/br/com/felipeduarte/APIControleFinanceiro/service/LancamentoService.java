@@ -59,6 +59,7 @@ public class LancamentoService {
 		this.restricaoService = restricaoService;
 	}
 
+	@Transactional(rollbackOn = Exception.class)
 	public LancamentoDTO salvar(Long idBalanco, LancamentoSalvarDTO lancamentoDTO) {
 		
 		var balanco = this.balancoService.buscarPorId(idBalanco);
@@ -87,6 +88,7 @@ public class LancamentoService {
 		return new LancamentoDTO(lancamento);
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public LancamentoDTO alterar(Long id, LancamentoSalvarDTO lancamentoDTO) {
 		
 		if(id == null) throw new IllegalParameterException("Erro! id não pode ser nullo");
@@ -122,6 +124,7 @@ public class LancamentoService {
 		return new LancamentoDTO(lancamento);
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public void excluir(Long id) {
 		
 		var optLancamento = this.repository.findById(id);

@@ -3,6 +3,8 @@ package br.com.felipeduarte.APIControleFinanceiro.service;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -39,6 +41,7 @@ public class UsuarioService {
 		this.restricaoService = restricaoService;
 	}
 
+	@Transactional(rollbackOn = Exception.class)
 	public UsuarioDTO salvar(UsuarioSalvarDTO usuarioDTO) {
 		
 		var optUsuarioEmail = this.repository.findByEmail(usuarioDTO.getEmail());
@@ -55,6 +58,7 @@ public class UsuarioService {
 		
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public UsuarioDTO atualizar(Long id, UsuarioSalvarDTO usuarioDTO) {
 		
 		if(id == null) throw new IllegalParameterException("Erro! id não pode ser nullo");
@@ -87,6 +91,7 @@ public class UsuarioService {
 		return new UsuarioDTO(usuario);
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public void excluir(Long id) {
 		
 		var optUsuario = this.repository.findById(id);

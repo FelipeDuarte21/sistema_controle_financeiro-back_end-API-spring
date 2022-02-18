@@ -106,6 +106,7 @@ public class BalancoService {
 	
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public BalancoDTO recuperarAtual(Long idCategoria) {
 		
 		var balanco = recuperarAtualInterno(idCategoria);
@@ -197,6 +198,7 @@ public class BalancoService {
 		return optBalanco.get();
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public void atualizarSaldo(Balanco balanco) {
 			
 		var proventos = new BigDecimal("0");

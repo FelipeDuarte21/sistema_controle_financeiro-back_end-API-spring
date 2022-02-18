@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,6 +38,7 @@ public class CategoriaService {
 		this.restricaoService = restricaoService;
 	}
 
+	@Transactional(rollbackOn = Exception.class)
 	public CategoriaDTO salvar(CategoriaSalvarDTO categoriaDTO) {
 		//Obtem o usuário logado
 		Usuario usuario = this.restricaoService.getUsuario();
@@ -53,6 +56,7 @@ public class CategoriaService {
 		return new CategoriaDTO(categoria);
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public CategoriaDTO atualizar(Long id, CategoriaSalvarDTO categoriaDTO) {
 		
 		if(id == null) throw new IllegalParameterException("Erro! id não pode ser nullo");
@@ -76,6 +80,7 @@ public class CategoriaService {
 		return new CategoriaDTO(categoria);
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public void excluir(Long id) {
 		
 		var optCategoria = this.repository.findById(id);
