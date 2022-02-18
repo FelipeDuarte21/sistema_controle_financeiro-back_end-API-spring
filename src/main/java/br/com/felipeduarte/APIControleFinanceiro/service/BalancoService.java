@@ -9,11 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
+import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoFaixaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
@@ -111,6 +114,7 @@ public class BalancoService {
 	
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public Balanco recuperarAtualInterno(Long idCategoria) {
 		
 		try {
@@ -125,10 +129,6 @@ public class BalancoService {
 			
 			var balancoNovo = cadastrar(categoria);
 			
-			optBalanco.get().setFechado(true);
-			
-			this.repository.save(optBalanco.get());
-			
 			return balancoNovo;
 			
 		}catch(ObjectNotFoundFromParameterException ex) {
@@ -138,6 +138,7 @@ public class BalancoService {
 	
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public Balanco cadastrar(Categoria categoria) {
 		
 		var anoMesAgora = YearMonth.now(clock.getZone());
@@ -149,7 +150,8 @@ public class BalancoService {
 		
 		var saldoAnterior = new BigDecimal("0");
 		
-		if(optBalancoMesPassado.isPresent()) saldoAnterior.add(optBalancoMesPassado.get().getSaldoAtual());
+		if(optBalancoMesPassado.isPresent()) 
+			saldoAnterior = saldoAnterior.add(optBalancoMesPassado.get().getSaldoAtual());
 		
 		var balanco = new Balanco(null,anoMesAgora,saldoAnterior,saldoAnterior,false);
 		balanco.setCategoria(categoria);
@@ -200,17 +202,18 @@ public class BalancoService {
 		var proventos = new BigDecimal("0");
 		var despesas = new BigDecimal("0");
 		
-		balanco.getLancamentos().forEach(lancamento -> {
+		for(Lancamento lancamento: balanco.getLancamentos()) {
 			
 			if(lancamento.getTipo().getValor().equals(TipoLancamentoEnum.PROVENTO.getValor()))
-				proventos.add(lancamento.getValor());
-				
-			if(lancamento.getTipo().getValor().equals(TipoLancamentoEnum.DESPESA.getValor()))
-				despesas.add(lancamento.getValor());
+				proventos = proventos.add(lancamento.getValor());
 			
-		});
+			if(lancamento.getTipo().getValor().equals(TipoLancamentoEnum.DESPESA.getValor()))
+				despesas = despesas.add(lancamento.getValor());
+			
+		}
 		
-		var saldo = new BigDecimal("0").add(balanco.getSaldoAnterior()).add(proventos).subtract(despesas);
+		var saldo = new BigDecimal("0").add(balanco.getSaldoAnterior())
+				.add(proventos).subtract(despesas);
 		
 		balanco.setSaldoAtual(saldo);
 		
