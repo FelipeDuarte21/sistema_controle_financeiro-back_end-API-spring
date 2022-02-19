@@ -128,6 +128,8 @@ public class BalancoService {
 			
 			if(optBalanco.isPresent()) return optBalanco.get();
 			
+			fecharBalancoAnterior(categoria);
+			
 			var balancoNovo = cadastrar(categoria);
 			
 			return balancoNovo;
@@ -160,6 +162,25 @@ public class BalancoService {
 		balanco = this.repository.save(balanco);
 		
 		return balanco;
+		
+	}
+	
+	@Transactional(rollbackOn = Exception.class)
+	private void fecharBalancoAnterior(Categoria categoria) {
+		
+		var dataAtual = YearMonth.now(clock.getZone());
+		
+		var optBalanco = 
+				this.repository.findByCategoriaAndMesAno(
+						categoria, dataAtual.minusMonths(1L));
+		
+		if(optBalanco.isPresent()) {
+			
+			optBalanco.get().setFechado(true);
+			
+			this.repository.save(optBalanco.get());
+		
+		}
 		
 	}
 	
