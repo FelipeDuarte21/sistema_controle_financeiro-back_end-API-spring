@@ -100,6 +100,12 @@ public class LancamentoService {
 			throw new ObjectNotFoundFromParameterException(
 					"Erro! lançamento não encontrado para o id informado!");
 		
+		var balanco = optLancamento.get().getBalanco();
+		
+		if(balanco.getFechado()) 
+			throw new IllegalParameterException(
+					"Erro! o balanço do lançamento já está fechado!");
+		
 		//Verifica se o lançamento pertence ao usuario
 		this.restricaoService.verificarPermissaoConteudo(optLancamento.get().getBalanco().getCategoria());
 		
@@ -115,7 +121,6 @@ public class LancamentoService {
 		
 		lancamento = this.repository.save(lancamento);
 		
-		var balanco = optLancamento.get().getBalanco();
 		balanco.rmvLancamento(optLancamento.get());
 		balanco.addLancamento(lancamento);
 		this.balancoService.atualizarSaldo(balanco);
