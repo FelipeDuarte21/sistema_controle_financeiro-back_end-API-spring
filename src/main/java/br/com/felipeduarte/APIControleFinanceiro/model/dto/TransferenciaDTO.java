@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import javax.validation.constraints.NotNull;
 
@@ -9,19 +10,22 @@ import org.hibernate.validator.constraints.Length;
 public class TransferenciaDTO {
 	
 	@NotNull(message = "Informe o id da categoria de origem")
-	public Long categoriaOrigem;
+	private Long categoriaOrigem;
 	
 	@NotNull(message = "Informe o id da categoria de destino")
-	public Long categoriaDestino;
+	private Long categoriaDestino;
 	
 	@NotNull(message = "Informe o nome")
 	@Length(min=3,max=80,message = "O campo nome deverá ter entre {min} e {max} caracteres!")
-	public String nome;
+	private String nome;
 	
-	public String descricao;
+	@NotNull(message = "Informe a data")
+	private LocalDate data;
+	
+	private String descricao;
 	
 	@NotNull(message = "Informe o valor")
-	public BigDecimal valor;
+	private BigDecimal valor;
 	
 	public TransferenciaDTO() {
 		
@@ -49,6 +53,14 @@ public class TransferenciaDTO {
 
 	public void setNome(String nome) {
 		this.nome = nome;
+	}
+
+	public LocalDate getData() {
+		return data;
+	}
+
+	public void setData(LocalDate data) {
+		this.data = data;
 	}
 
 	public String getDescricao() {

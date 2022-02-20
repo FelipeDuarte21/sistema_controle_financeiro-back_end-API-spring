@@ -96,12 +96,12 @@ public class UsuarioService {
 		
 		var optUsuario = this.repository.findById(id);
 		
+		//Verifica se usuario é o mesmo que está logado
+		this.restricaoService.verificarUsuario(id);
+		
 		if(!optUsuario.isPresent())
 			throw new ObjectNotFoundFromParameterException(
 					"Erro! usuário não encontrado para o id informado!");
-		
-		//Verifica se usuario é o mesmo que está logado
-		this.restricaoService.verificarUsuario(id);
 		
 		this.repository.delete(optUsuario.get());
 		

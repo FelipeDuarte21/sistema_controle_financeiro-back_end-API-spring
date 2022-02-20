@@ -78,20 +78,22 @@ public class BalancoService {
 				
 				var balancosIntervaloAnterior = 
 						this.repository.findByCategoriaAndMesAnoBetween(categoria,
-								anoMes.minusMonths(metade-1), anoMes);
+								anoMes.minusMonths(metade-1), anoMes.minusMonths(1L));
+				
+				balancos.addAll(balancosIntervaloAnterior);
+				balancos.add(optBalancoFoco.get());
 				
 				var balancosIntervalorPosterior = 
 						this.repository.findByCategoriaAndMesAnoBetween(categoria,
 								anoMes.plusMonths(1L), anoMes.plusMonths(metade-1));
 				
-				balancos.addAll(balancosIntervaloAnterior);
 				balancos.addAll(balancosIntervalorPosterior);
 			
 			}
 			
 			return balancos.stream().map(balanco -> {
 				var balancoDTO = new BalancoFaixaDTO((Balanco) balanco);
-				if(balancoDTO.getMesAno().equals(anoMesAgora)) balancoDTO.setAtual(true);
+				if(balancoDTO.getMesAno().equals(anoMes)) balancoDTO.setAtual(true);
 				return balancoDTO;
 			}).collect(Collectors.toList());
 			
@@ -242,10 +244,6 @@ public class BalancoService {
 		
 		this.repository.save(balanco);
 		
-	}
-	
-	public void atulizarBalanco(Balanco balanco) {
-		this.repository.save(balanco);
 	}
 	
 }

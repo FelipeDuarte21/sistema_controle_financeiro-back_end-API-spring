@@ -79,11 +79,10 @@ public class LancamentoService {
 		lancamento.setBalanco(balanco);
 		lancamento.setDataRegistro(LocalDateTime.now(clock.getZone()));
 		
-		lancamento = this.repository.save(lancamento);
-		
 		balanco.addLancamento(lancamento);
 		this.balancoService.atualizarSaldo(balanco);
-		this.balancoService.atulizarBalanco(balanco);
+		
+		lancamento = this.repository.save(lancamento);
 		
 		return new LancamentoDTO(lancamento);
 	}
@@ -119,12 +118,11 @@ public class LancamentoService {
 		
 		lancamento.setTipo(tipo);
 		
-		lancamento = this.repository.save(lancamento);
-		
 		balanco.rmvLancamento(optLancamento.get());
 		balanco.addLancamento(lancamento);
 		this.balancoService.atualizarSaldo(balanco);
-		this.balancoService.atulizarBalanco(balanco);
+		
+		lancamento = this.repository.save(lancamento);
 		
 		return new LancamentoDTO(lancamento);
 	}
@@ -147,11 +145,11 @@ public class LancamentoService {
 		//Verifica se a categoria do balanco pertence ao usuario logado
 		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
 		
-		this.repository.delete(optLancamento.get());
-		
 		balanco.rmvLancamento(optLancamento.get());
 		
 		this.balancoService.atualizarSaldo(balanco);
+		
+		this.repository.delete(optLancamento.get());
 		
 	}
 	
@@ -188,7 +186,7 @@ public class LancamentoService {
 			
 			if(order == 2) direction = Direction.DESC;
 			
-			var pageable = PageRequest.of(page, size,direction,"id");
+			var pageable = PageRequest.of(page, size,direction,"dataLancamento");
 			
 			var lancamentos = this.repository.findByBalanco(balanco, pageable);
 			
@@ -279,6 +277,7 @@ public class LancamentoService {
 		lancamentoOrigem.setDescricao(transferencia.getDescricao() 
 				+ " - Transferência Destino: " + balDestino.getCategoria().getNome());
 		lancamentoOrigem.setTipo(TipoLancamentoEnum.DESPESA.getValor());
+		lancamentoOrigem.setData(transferencia.getData());
 		
 		this.salvar(balOrigem.getId(), lancamentoOrigem);
 	
@@ -289,6 +288,7 @@ public class LancamentoService {
 		lancamentoDestino.setDescricao(transferencia.getDescricao() 
 				+ " - Transferência Origem: " + balOrigem.getCategoria().getNome());
 		lancamentoDestino.setTipo(TipoLancamentoEnum.PROVENTO.getValor());
+		lancamentoDestino.setData(transferencia.getData());
 		
 		this.salvar(balDestino.getId(), lancamentoDestino);
 
