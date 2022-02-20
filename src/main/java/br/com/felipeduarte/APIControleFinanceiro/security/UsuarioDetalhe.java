@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
 
 
@@ -26,8 +27,18 @@ public class UsuarioDetalhe implements UserDetails {
 		this.email = email;
 		this.senha = senha;
 		this.autorizacoes = tipos.stream().map(
-				t -> new SimpleGrantedAuthority(TipoUsuario.toEnum(t).getDescricao()) ).collect(Collectors.toList());
+				t -> new SimpleGrantedAuthority(TipoUsuario.toEnum(t).getDescricao()) )
+					.collect(Collectors.toList());
 				
+	}
+	
+	public UsuarioDetalhe(Usuario usuario) {
+		this.id = usuario.getId();
+		this.email = usuario.getEmail();
+		this.senha = usuario.getSenha();
+		this.autorizacoes = usuario.getTipo().stream().map(
+				t -> new SimpleGrantedAuthority(TipoUsuario.toEnum(t).getDescricao()) )
+					.collect(Collectors.toList());
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	
 	private static String[] PATH_PUBLICO = {"/api/usuarios","/login"};
+	private static String[] PATH_DOCUMENTATION = {"/swagger-ui.html"};
 	
 	@Autowired
 	private UsuarioDetalheService usuarioDetalheService;
@@ -31,9 +32,9 @@ public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable().authorizeRequests()
+		.antMatchers(PATH_DOCUMENTATION).permitAll()
 		.antMatchers(HttpMethod.POST,PATH_PUBLICO).permitAll()
-		.anyRequest().authenticated()
-		.and()
+		.anyRequest().authenticated().and()
 		.addFilter(new JWTAutenticacaoFiltro(authenticationManager(), this.jwtUtil))
 		.addFilter(new JWTAutorizacaoFiltro(authenticationManager(), this.jwtUtil,this.usuarioDetalheService))
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
