@@ -30,7 +30,7 @@ import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParame
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @RestController
-@RequestMapping("/lancamento")
+@RequestMapping("api/categorias/{idCategoria}/balancos/{idBalanco}/lancamentos")
 public class LancamentoResource {
 	
 	private LancamentoService service;
@@ -42,14 +42,17 @@ public class LancamentoResource {
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@PostMapping
-	public ResponseEntity<LancamentoDTO> salvar(@RequestParam(name = "balanco") Long idBalanco, 
+	public ResponseEntity<LancamentoDTO> salvar(@PathVariable(name = "idCategoria") Long idCategoria,
+			@PathVariable(name = "idBalanco") Long idBalanco, 
 			@RequestBody @Valid LancamentoSalvarDTO lancamentoDTO, UriComponentsBuilder uriBuilder){
 		
 		try {
 			
 			var lancamento = this.service.salvar(idBalanco,lancamentoDTO);
 			
-			var uri = uriBuilder.path("/lancamento/{id}").buildAndExpand(lancamento.getId()).toUri();
+			var uri = uriBuilder.path(
+					"api/categorias/{idCategoria}/balancos/{idBalanco}/lancamentos/{id}")
+					.buildAndExpand(idCategoria,idBalanco, lancamento.getId()).toUri();
 			
 			return ResponseEntity.created(uri).body(lancamento);
 			
@@ -121,7 +124,7 @@ public class LancamentoResource {
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping
 	public ResponseEntity<Page<LancamentoDTO>> listar(
-			@RequestParam(name = "balanco") Long idBalanco,
+			@PathVariable(name = "idBalanco") Long idBalanco,
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "6") Integer size,
 			@RequestParam(defaultValue = "2") Integer order
@@ -142,7 +145,7 @@ public class LancamentoResource {
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(value = "/arquivo", produces = "text/csv")
-	public ResponseEntity<Resource> gerarArquivoCSV(@RequestParam(name = "balanco") Long idBalanco){
+	public ResponseEntity<Resource> gerarArquivoCSV(@PathVariable(name = "idBalanco") Long idBalanco){
 		
 		try {
 			

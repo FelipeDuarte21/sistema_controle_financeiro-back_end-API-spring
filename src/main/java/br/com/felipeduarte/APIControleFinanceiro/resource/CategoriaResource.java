@@ -26,7 +26,7 @@ import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParame
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @RestController
-@RequestMapping("/categoria")
+@RequestMapping("api/categorias")
 public class CategoriaResource {
 	
 	private CategoriaService service;
@@ -45,7 +45,8 @@ public class CategoriaResource {
 			
 			var categoria = this.service.salvar(categoriaDTO);
 			
-			var uri = uriBuilder.path("/categoria/{id}").buildAndExpand(categoria.getId()).toUri();
+			var uri = uriBuilder.path("api/categorias/{id}")
+					.buildAndExpand(categoria.getId()).toUri();
 			
 			return ResponseEntity.created(uri).body(categoria);
 			

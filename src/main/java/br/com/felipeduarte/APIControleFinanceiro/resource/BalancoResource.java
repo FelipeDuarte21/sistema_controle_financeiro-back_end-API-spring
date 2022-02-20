@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +18,7 @@ import br.com.felipeduarte.APIControleFinanceiro.service.BalancoService;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 
 @RestController
-@RequestMapping("/balanco")
+@RequestMapping("api/categorias/{idCategoria}/balancos")
 public class BalancoResource {
 	
 	private BalancoService service;
@@ -30,7 +31,7 @@ public class BalancoResource {
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/faixa")
 	public ResponseEntity<List<BalancoFaixaDTO>> buscarFaixas(
-			@RequestParam(name = "categoria") Long idCategoria,
+			@PathVariable(name = "idCategoria") Long idCategoria,
 			@RequestParam(name = "ano") Integer ano, 
 			@RequestParam(name = "mes") Integer mes, 
 			@RequestParam(name = "qtdMes") Integer qtdMes){
@@ -50,7 +51,7 @@ public class BalancoResource {
 	
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/atual")
-	public ResponseEntity<BalancoDTO> recuperarAtual(@RequestParam(name = "categoria") Long idCategoria){
+	public ResponseEntity<BalancoDTO> recuperarAtual(@PathVariable(name = "idCategoria") Long idCategoria){
 		
 		try {
 			
@@ -68,7 +69,7 @@ public class BalancoResource {
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping("/data")
 	public ResponseEntity<BalancoDTO> buscarPorData(
-		@RequestParam(name = "categoria") Long idCategoria, 
+		@PathVariable(name = "idCategoria") Long idCategoria, 
 		@RequestParam Integer mes,
 		@RequestParam Integer ano){
 		

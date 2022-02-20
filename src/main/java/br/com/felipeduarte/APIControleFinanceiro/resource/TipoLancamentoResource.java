@@ -13,7 +13,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.TipoLancamentoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.service.TipoLancamentoService;
 
 @RestController
-@RequestMapping("/tipo-lancamento")
+@RequestMapping("api/tipos-lancamentos")
 public class TipoLancamentoResource {
 	
 	private TipoLancamentoService service;

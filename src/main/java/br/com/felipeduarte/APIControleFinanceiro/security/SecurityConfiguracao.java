@@ -20,7 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	
-	private static String[] PATH_PUBLICO = {"/usuario","/login"};
+	private static String[] PATH_PUBLICO = {"/api/usuarios","/login"};
 	
 	@Autowired
 	private UsuarioDetalheService usuarioDetalheService;
