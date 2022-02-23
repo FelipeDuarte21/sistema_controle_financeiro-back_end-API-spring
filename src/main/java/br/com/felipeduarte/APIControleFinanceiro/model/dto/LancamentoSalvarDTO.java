@@ -7,20 +7,27 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class LancamentoSalvarDTO {
 	
+	@ApiModelProperty(value = "Nome do lançamento")
 	@NotNull(message = "Informe o campo nome")
 	@Length(min=3,max=80,message = "O campo nome deverá ter entre {min} e {max} caracteres!")
 	private String nome;
 	
+	@ApiModelProperty(value = "Descrição do lançamento")
 	private String descricao;
 	
+	@ApiModelProperty(value = "Valor do lançamento")
 	@NotNull(message = "Informa o campo valor")
 	private BigDecimal valor;
-	
+
+	@ApiModelProperty(value = "Data que ocorreu o lançamento")
 	@NotNull(message = "Informe a data do lançamento")
 	private LocalDate data;
 	
+	@ApiModelProperty(value = "Tipo do lançamento (Provento ou Despesa)")
 	@NotNull(message = "Informe o valor do tipo")
 	private Integer tipo;
 	

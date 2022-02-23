@@ -16,6 +16,9 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoFaixaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.service.BalancoService;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("api/categorias/{idCategoria}/balancos")
@@ -28,8 +31,15 @@ public class BalancoResource {
 		this.service = service;
 	}
 	
+	@ApiOperation(value = "Busca um resumo dos balanços em torno de uma data")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Retorna os balanços"),
+			@ApiResponse(code = 400, 
+				message = "Erro nos parâmetros recebidos ou balanço central não econtrado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/faixa")
+	@GetMapping(value = "/faixa", produces = "application/json")
 	public ResponseEntity<List<BalancoFaixaDTO>> buscarFaixas(
 			@PathVariable(name = "idCategoria") Long idCategoria,
 			@RequestParam(name = "ano") Integer ano, 
@@ -49,8 +59,15 @@ public class BalancoResource {
 		
 	}
 	
+	@ApiOperation(value = "Busca o balanço aberto da categoria")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Balanço encontrado"),
+			@ApiResponse(code = 400, message = "Erro nos paramêtros recebidos"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/atual")
+	@GetMapping(value = "/atual", produces = "application/json")
 	public ResponseEntity<BalancoDTO> recuperarAtual(@PathVariable(name = "idCategoria") Long idCategoria){
 		
 		try {
@@ -66,8 +83,15 @@ public class BalancoResource {
 		
 	}
 	
+	@ApiOperation(value = "Busca balanço de uma determinada data")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Balanço encontrado"),
+			@ApiResponse(code = 400, message = "Erro nos paramêtros recebidos"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/data")
+	@GetMapping(value = "/data", produces = "application/json")
 	public ResponseEntity<BalancoDTO> buscarPorData(
 		@PathVariable(name = "idCategoria") Long idCategoria, 
 		@RequestParam Integer mes,

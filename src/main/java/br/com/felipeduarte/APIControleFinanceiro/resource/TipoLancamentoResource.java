@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.TipoLancamentoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.service.TipoLancamentoService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("api/tipos-lancamentos")
@@ -23,8 +26,14 @@ public class TipoLancamentoResource {
 		this.service = service;
 	}
 	
+	@ApiOperation(value = "Buscar os tipo de lançamentos")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Tipos de lançamentos encontrado"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping
+	@GetMapping(produces = "application/json")
 	public ResponseEntity<List<TipoLancamentoDTO>> listar(){
 		
 		var tipos = this.service.listar();

@@ -3,12 +3,20 @@ package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 import java.time.LocalDate;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
+import io.swagger.annotations.ApiModelProperty;
 
 public class CategoriaDTO {
 	
+	@ApiModelProperty(value = "Identificação da categoria")
 	private Long id;
+	
+	@ApiModelProperty(value = "Nome da categoria")
 	private String nome;
+	
+	@ApiModelProperty(value = "Descrição da categoria")
 	private String descricao;
+	
+	@ApiModelProperty(value = "Data de cadastro da categoria")
 	private LocalDate dataCadastro;
 	
 	public CategoriaDTO() {

@@ -3,11 +3,17 @@ package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 import java.time.YearMonth;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
+import io.swagger.annotations.ApiModelProperty;
 
 public class BalancoFaixaDTO {
 	
+	@ApiModelProperty(value = "Identificação do balanço")
 	private Long id;
+	
+	@ApiModelProperty(value = "Data (ano e mês) do balanço")
 	private YearMonth mesAno;
+	
+	@ApiModelProperty(value = "Balanço central da busca")
 	private Boolean atual;
 
 	public BalancoFaixaDTO() {

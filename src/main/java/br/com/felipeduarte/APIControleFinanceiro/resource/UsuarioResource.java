@@ -24,9 +24,12 @@ import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFou
 import br.com.felipeduarte.APIControleFinanceiro.service.UsuarioService;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping(value = "/api/usuarios")
 public class UsuarioResource {
 	
 	private UsuarioService service;
@@ -36,7 +39,12 @@ public class UsuarioResource {
 		this.service = service;
 	}
 	
-	@PostMapping
+	@ApiOperation(value = "Cadastra um novo usuário")
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Usuário cadastrado com sucesso"),
+			@ApiResponse(code = 400, message = "Usuário já cadastrado")
+	})
+	@PostMapping(produces = "application/json",consumes = "application/json")
 	public ResponseEntity<UsuarioDTO> salvar(@RequestBody @Valid UsuarioSalvarDTO usuarioDTO,
 			UriComponentsBuilder uriBuilder){
 		
@@ -55,8 +63,16 @@ public class UsuarioResource {
 			
 	}
 	
+	@ApiOperation(value = "Atualiza os dados de um usuário")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Usuário atualizado com sucesso"),
+			@ApiResponse(code = 400, message = "Erro de Parâmetros ou usuário já cadastrado"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Usuário não encontrado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PutMapping("/{id}")
+	@PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<UsuarioDTO> update(@PathVariable(name = "id") Long id, 
 			@RequestBody @Valid UsuarioSalvarDTO usuarioDTO){
 		
@@ -76,7 +92,14 @@ public class UsuarioResource {
 		
 	}
 	
-	@DeleteMapping("/{id}")
+	@ApiOperation(value = "Exclui um usuário")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Exclui cadastro de usuário"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso Negado"),
+			@ApiResponse(code = 404, message = "Usuário não encontrado")
+	})
+	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
 		
 		try {
@@ -92,8 +115,15 @@ public class UsuarioResource {
 	
 	}
 	
+	@ApiOperation(value = "Busca o usuário pela identificação")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Retona usuário"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Usuário não encontrado")
+	})
 	@PreAuthorize("hasAnyRole('ADMIN')")
-	@GetMapping("/{id}")
+	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<UsuarioDTO> buscarPorId(@PathVariable(name = "id") Long id){
 		
 		try {
@@ -109,8 +139,16 @@ public class UsuarioResource {
 		
 	}
 	
+	@ApiOperation(value = "Busca um usuário pelo email")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Retona usuário"),
+			@ApiResponse(code = 400, message = "Erro no parametro email"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Usuário não encontrado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/email/{valor}")
+	@GetMapping(value = "/email/{valor}", produces = "application/json")
 	public ResponseEntity<UsuarioDTO> buscarPorEmail(@PathVariable(name = "valor") String email){
 		
 		try {
@@ -129,9 +167,15 @@ public class UsuarioResource {
 		
 	}
 
-	
+	@ApiOperation(value = "Busca uma página de usuários")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Retona página de usuário"),
+			@ApiResponse(code = 400, message = "Erro nos parâmetros"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+	})
 	@PreAuthorize("hasAnyRole('ADMIN')")
-	@GetMapping
+	@GetMapping(produces = "application/json")
 	public ResponseEntity<Page<UsuarioDTO>> listar(
 		@RequestParam(defaultValue = "0") Integer page,
 		@RequestParam(defaultValue = "6") Integer size,

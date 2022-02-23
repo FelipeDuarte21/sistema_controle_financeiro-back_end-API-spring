@@ -1,10 +1,14 @@
 package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.TipoLancamento;
+import io.swagger.annotations.ApiModelProperty;
 
 public class TipoLancamentoDTO {
 	
+	@ApiModelProperty(value = "Valor do tipo de lançamento")
 	private Integer valor;
+	
+	@ApiModelProperty(value = "Nome do tipo de lançamento")
 	private String nome;
 	
 	public TipoLancamentoDTO() {

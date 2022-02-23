@@ -14,6 +14,9 @@ import br.com.felipeduarte.APIControleFinanceiro.resource.exception.Authorizatio
 import br.com.felipeduarte.APIControleFinanceiro.security.JWTUtil;
 import br.com.felipeduarte.APIControleFinanceiro.security.UsuarioDetalhe;
 import br.com.felipeduarte.APIControleFinanceiro.security.UsuarioDetalheService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,7 +31,12 @@ public class RefreshTokenResource {
 		this.jwtUtil = jwtUtil;
 	}
 	
-	@PostMapping("/refresh-token")
+	@ApiOperation(value = "Refresh do token de acesso")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Token novo gerado com sucesso"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
+	@PostMapping(value = "/refresh-token")
 	public ResponseEntity<Void> refreshToken(HttpServletResponse response){
 		
 		try {

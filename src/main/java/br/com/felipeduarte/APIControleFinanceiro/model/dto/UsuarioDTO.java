@@ -5,12 +5,20 @@ import java.util.stream.Collectors;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
+import io.swagger.annotations.ApiModelProperty;
 
 public class UsuarioDTO {
 	
+	@ApiModelProperty(value = "Identificação do usuário")
 	private Long id;
+	
+	@ApiModelProperty(value = "Nome do usuário")
 	private String nome;
+	
+	@ApiModelProperty(value = "Email do usuário")
 	private String email;
+	
+	@ApiModelProperty(value = "Perfis de acesso do usuário")
 	private Set<String> tipo;
 	
 	public UsuarioDTO(Usuario usuario) {

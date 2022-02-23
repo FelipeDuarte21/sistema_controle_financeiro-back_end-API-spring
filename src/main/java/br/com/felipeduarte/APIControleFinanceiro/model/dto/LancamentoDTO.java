@@ -5,16 +5,32 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
+import io.swagger.annotations.ApiModelProperty;
 
 public class LancamentoDTO {
 	
+	@ApiModelProperty(value = "Identificação do lançamento")
 	private Long id;
+	
+	@ApiModelProperty(value = "Nome do lançamento")
 	private String nome;
+	
+	@ApiModelProperty(value = "Descrição do lançamento")
 	private String descricao;
+	
+	@ApiModelProperty(value = "Valor do lançamento")
 	private BigDecimal valor;
+	
+	@ApiModelProperty(value = "Data que ocorreu o lançamento")
 	private LocalDate data;
+	
+	@ApiModelProperty(value = "Data que foi registrado o lançamento")
 	private LocalDateTime dataRegistro;
+	
+	@ApiModelProperty(value = "Tipo do lançamento (Provento ou Despesa)")
 	private TipoLancamentoDTO tipo;
+	
+	@ApiModelProperty(value = "Balanço que pertence o lançamento")
 	private BalancoDTO balanco;
 	
 	public LancamentoDTO() {

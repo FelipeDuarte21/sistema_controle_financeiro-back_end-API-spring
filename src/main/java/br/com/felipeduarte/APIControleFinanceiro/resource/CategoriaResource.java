@@ -24,6 +24,9 @@ import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFou
 import br.com.felipeduarte.APIControleFinanceiro.service.CategoriaService;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("api/categorias")
@@ -36,8 +39,14 @@ public class CategoriaResource {
 		this.service = service;
 	}
 	
+	@ApiOperation(value = "Cadastra uma nova categoria")
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Categoria cadastrada com sucesso"),
+			@ApiResponse(code = 400, message = "Categoria já cadastrada"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PostMapping
+	@PostMapping(produces = "application/json",consumes = "application/json")
 	public ResponseEntity<CategoriaDTO> salvar(@RequestBody @Valid CategoriaSalvarDTO categoriaDTO,
 			UriComponentsBuilder uriBuilder){
 		
@@ -57,8 +66,15 @@ public class CategoriaResource {
 		
 	}
 	
+	@ApiOperation(value = "Atualiza os dados de uma categoria")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Categoria atualizada com sucesso"),
+			@ApiResponse(code = 400, message = "Dados recebidos inválidos"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PutMapping("/{id}")
+	@PutMapping(value = "/{id}", produces = "application/json", consumes = "application/json")
 	public ResponseEntity<CategoriaDTO> atualizar(@PathVariable(name = "id") Long id, 
 			@RequestBody @Valid CategoriaSalvarDTO categoriaDTO){
 		
@@ -78,8 +94,15 @@ public class CategoriaResource {
 		
 	}
 	
+	@ApiOperation(value = "Exclui uma categoria")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Categoria excluida com sucesso"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 404, message = "Categoria não encontrada"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@DeleteMapping("/{id}")
+	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
 		
 		try {
@@ -95,8 +118,15 @@ public class CategoriaResource {
 		
 	}
 	
+	@ApiOperation(value = "Busca a categoria pela identificação")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Categoria encontrada"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 404, message = "Categoria não encontrada"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/{id}")
+	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<CategoriaDTO> buscarPorId(@PathVariable(name = "id") Long id){
 		
 		try {
@@ -112,8 +142,15 @@ public class CategoriaResource {
 		
 	}
 	
+	@ApiOperation(value = "Busca uma página de categoria")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Retorna a página"),
+			@ApiResponse(code = 400, message = "Parâmetros recebidos inválidos"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping
+	@GetMapping(produces = "application/json")
 	public ResponseEntity<Page<CategoriaDTO>> listar(
 		@RequestParam(defaultValue = "0") Integer page,
 		@RequestParam(defaultValue = "6") Integer size,

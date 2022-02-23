@@ -4,14 +4,26 @@ import java.math.BigDecimal;
 import java.time.YearMonth;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
+import io.swagger.annotations.ApiModelProperty;
 
 public class BalancoDTO {
 
+	@ApiModelProperty(value = "Identificação do balanço")
 	private Long id;
+	
+	@ApiModelProperty(value = "Data (ano e mês) do balanço")
 	private YearMonth mesAno;
+	
+	@ApiModelProperty(value = "Saldo do balanço anterior (mês anterior)")
 	private BigDecimal saldoAnterior;
+	
+	@ApiModelProperty(value = "Saldo do balanço")
 	private BigDecimal saldoAtual;
+	
+	@ApiModelProperty(value = "Balanço em aberto")
 	private Boolean fechado;
+	
+	@ApiModelProperty(value = "Categoria que o balanço pertence")
 	private CategoriaDTO categoria;
 	
 	public BalancoDTO() {

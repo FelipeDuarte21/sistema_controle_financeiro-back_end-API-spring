@@ -7,6 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,7 +22,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	
 	private static String[] PATH_PUBLICO = {"/api/usuarios","/login"};
-	private static String[] PATH_DOCUMENTATION = {"/swagger-ui.html"};
+	private static String[] PATH_DOCUMENTATION = {
+			"/swagger-resources/**",
+	        "/swagger-ui.html",
+	        "/v2/api-docs",
+	        "/webjars/**",
+	        "favicon.ico",
+	};
 	
 	@Autowired
 	private UsuarioDetalheService usuarioDetalheService;
@@ -32,12 +39,16 @@ public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable().authorizeRequests()
-		.antMatchers(PATH_DOCUMENTATION).permitAll()
 		.antMatchers(HttpMethod.POST,PATH_PUBLICO).permitAll()
 		.anyRequest().authenticated().and()
 		.addFilter(new JWTAutenticacaoFiltro(authenticationManager(), this.jwtUtil))
 		.addFilter(new JWTAutorizacaoFiltro(authenticationManager(), this.jwtUtil,this.usuarioDetalheService))
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
+	
+	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring().antMatchers(PATH_DOCUMENTATION);
 	}
 	
 	@Override

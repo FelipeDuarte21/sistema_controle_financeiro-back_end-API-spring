@@ -28,6 +28,9 @@ import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFou
 import br.com.felipeduarte.APIControleFinanceiro.service.LancamentoService;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("api/categorias/{idCategoria}/balancos/{idBalanco}/lancamentos")
@@ -40,8 +43,15 @@ public class LancamentoResource {
 		this.service = service;
 	}
 	
+	@ApiOperation(value = "Cadastra um novo lançamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Lançamento cadastrado com sucesso"),
+			@ApiResponse(code = 400, message = "Erro nos parâmetros recebidos"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PostMapping
+	@PostMapping(produces = "application/json", consumes = "application/json")
 	public ResponseEntity<LancamentoDTO> salvar(@PathVariable(name = "idCategoria") Long idCategoria,
 			@PathVariable(name = "idBalanco") Long idBalanco, 
 			@RequestBody @Valid LancamentoSalvarDTO lancamentoDTO, UriComponentsBuilder uriBuilder){
@@ -66,8 +76,14 @@ public class LancamentoResource {
 		
 	}
 	
+	@ApiOperation(value = "Atualiza os dados do lançamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Lançamento atualizado com sucesso"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PutMapping("/{id}")
+	@PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<LancamentoDTO> atualizar(@PathVariable("id") Long id, 
 			@RequestBody @Valid LancamentoSalvarDTO lancamentoDTO){
 		
@@ -87,8 +103,15 @@ public class LancamentoResource {
 		
 	}
 	
+	@ApiOperation(value = "Exclui lançamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Lançamento excluído com sucesso"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Lançamento não encontrado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@DeleteMapping("/{id}")
+	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
 		
 		try {
@@ -104,8 +127,15 @@ public class LancamentoResource {
 		
 	}
 	
+	@ApiOperation(value = "Busca o lançamento pela identificação")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Lançamento encontrado"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Lançamento não encontrado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping("/{id}")
+	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<LancamentoDTO> buscarPorId(@PathVariable Long id){
 		
 		try {
@@ -121,8 +151,15 @@ public class LancamentoResource {
 		
 	}
 	
+	@ApiOperation(value = "Obtem uma página de lançamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Página retorna com sucesso"),
+			@ApiResponse(code = 400, message = "Erro nos paramêtros recebidos"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping
+	@GetMapping(produces = "application/json")
 	public ResponseEntity<Page<LancamentoDTO>> listar(
 			@PathVariable(name = "idBalanco") Long idBalanco,
 			@RequestParam(defaultValue = "0") Integer page,
@@ -143,6 +180,13 @@ public class LancamentoResource {
 		
 	}
 	
+	@ApiOperation(value = "Obtem um arquivo csv dos lançamentos")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Arquivo obtido com sucesso"),
+			@ApiResponse(code = 400, message = "Erro nos geração do arquivo csv"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(value = "/arquivo", produces = "text/csv")
 	public ResponseEntity<Resource> gerarArquivoCSV(@PathVariable(name = "idBalanco") Long idBalanco){
@@ -165,6 +209,13 @@ public class LancamentoResource {
 		
 	}
 	
+	@ApiOperation(value = "Transferência entre categorias")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200,message = "Transferência feita com sucesso"),
+			@ApiResponse(code = 400, message = "Erro nos paramêtros recebidos"),
+			@ApiResponse(code = 401, message = "Acesso não autorizado"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@PostMapping("/transferencia")
 	public ResponseEntity<?> transferir(@RequestBody @Valid TransferenciaDTO transferencia){

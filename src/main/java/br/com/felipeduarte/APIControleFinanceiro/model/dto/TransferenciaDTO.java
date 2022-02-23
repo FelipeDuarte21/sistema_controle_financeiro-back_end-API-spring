@@ -7,23 +7,31 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class TransferenciaDTO {
 	
+	@ApiModelProperty(value = "Identificação da categoria que sai a transferência (origem)")
 	@NotNull(message = "Informe o id da categoria de origem")
 	private Long categoriaOrigem;
 	
+	@ApiModelProperty(value = "Identificação da categoria que recebe a transferência (destino)")
 	@NotNull(message = "Informe o id da categoria de destino")
 	private Long categoriaDestino;
 	
+	@ApiModelProperty(value = "Nome da transferência")
 	@NotNull(message = "Informe o nome")
 	@Length(min=3,max=80,message = "O campo nome deverá ter entre {min} e {max} caracteres!")
 	private String nome;
 	
+	@ApiModelProperty(value = "Data da realização da transferência")
 	@NotNull(message = "Informe a data")
 	private LocalDate data;
 	
+	@ApiModelProperty(value = "Descrição da transferência")
 	private String descricao;
 	
+	@ApiModelProperty(value = "Valor da transferência")
 	@NotNull(message = "Informe o valor")
 	private BigDecimal valor;
 	
