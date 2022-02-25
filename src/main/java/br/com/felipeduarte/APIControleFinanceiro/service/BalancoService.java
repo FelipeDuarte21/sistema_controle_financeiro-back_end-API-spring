@@ -93,7 +93,8 @@ public class BalancoService {
 			
 			return balancos.stream().map(balanco -> {
 				var balancoDTO = new BalancoFaixaDTO((Balanco) balanco);
-				if(balancoDTO.getMesAno().equals(anoMes)) balancoDTO.setAtual(true);
+				var data = YearMonth.of(balancoDTO.getAno(), balancoDTO.getMes());
+				if(data.equals(anoMes)) balancoDTO.setAtual(true);
 				return balancoDTO;
 			}).collect(Collectors.toList());
 			

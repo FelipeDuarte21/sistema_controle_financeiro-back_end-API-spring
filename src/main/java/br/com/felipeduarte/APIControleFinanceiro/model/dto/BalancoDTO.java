@@ -10,9 +10,12 @@ public class BalancoDTO {
 
 	@ApiModelProperty(value = "Identificação do balanço")
 	private Long id;
+
+	@ApiModelProperty(value = "Mês do balanço")
+	private Integer mes;
 	
-	@ApiModelProperty(value = "Data (ano e mês) do balanço")
-	private YearMonth mesAno;
+	@ApiModelProperty(value = "Ano do balanço")
+	private Integer ano;
 	
 	@ApiModelProperty(value = "Saldo do balanço anterior (mês anterior)")
 	private BigDecimal saldoAnterior;
@@ -33,7 +36,8 @@ public class BalancoDTO {
 	public BalancoDTO(Long id, YearMonth mesAno, BigDecimal saldoAnterior, BigDecimal saldoAtual, 
 			Boolean fechado) {
 		this.id = id;
-		this.mesAno = mesAno;
+		this.ano = mesAno.getYear();
+		this.mes = mesAno.getMonthValue();
 		this.saldoAnterior = saldoAnterior;
 		this.saldoAtual = saldoAtual;
 		this.fechado = fechado;
@@ -41,7 +45,8 @@ public class BalancoDTO {
 
 	public BalancoDTO(Balanco balanco) {
 		this.id = balanco.getId();
-		this.mesAno = balanco.getMesAno();
+		this.ano = balanco.getMesAno().getYear();
+		this.mes = balanco.getMesAno().getMonthValue();
 		this.saldoAnterior = balanco.getSaldoAnterior();
 		this.saldoAtual = balanco.getSaldoAtual();
 		this.fechado = balanco.getFechado();
@@ -56,14 +61,22 @@ public class BalancoDTO {
 		this.id = id;
 	}
 
-	public YearMonth getMesAno() {
-		return mesAno;
+	public Integer getMes() {
+		return mes;
 	}
-	
-	public void setMesAno(YearMonth mesAno) {
-		this.mesAno = mesAno;
+
+	public void setMes(Integer mes) {
+		this.mes = mes;
 	}
-	
+
+	public Integer getAno() {
+		return ano;
+	}
+
+	public void setAno(Integer ano) {
+		this.ano = ano;
+	}
+
 	public BigDecimal getSaldoAnterior() {
 		return saldoAnterior;
 	}

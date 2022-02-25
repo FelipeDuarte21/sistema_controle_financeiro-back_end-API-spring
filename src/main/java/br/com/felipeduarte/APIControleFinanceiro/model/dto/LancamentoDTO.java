@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -21,9 +23,11 @@ public class LancamentoDTO {
 	@ApiModelProperty(value = "Valor do lançamento")
 	private BigDecimal valor;
 	
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	@ApiModelProperty(value = "Data que ocorreu o lançamento")
 	private LocalDate data;
 	
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "Data que foi registrado o lançamento")
 	private LocalDateTime dataRegistro;
 	

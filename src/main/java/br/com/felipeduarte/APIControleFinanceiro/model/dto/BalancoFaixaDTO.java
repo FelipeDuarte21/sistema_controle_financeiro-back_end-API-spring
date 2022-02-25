@@ -1,7 +1,5 @@
 package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
-import java.time.YearMonth;
-
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -10,8 +8,11 @@ public class BalancoFaixaDTO {
 	@ApiModelProperty(value = "Identificação do balanço")
 	private Long id;
 	
-	@ApiModelProperty(value = "Data (ano e mês) do balanço")
-	private YearMonth mesAno;
+	@ApiModelProperty(value = "Mês do balanço")
+	private Integer mes;
+	
+	@ApiModelProperty(value = "Ano do balanço")
+	private Integer ano;
 	
 	@ApiModelProperty(value = "Balanço central da busca")
 	private Boolean atual;
@@ -22,7 +23,8 @@ public class BalancoFaixaDTO {
 	
 	public BalancoFaixaDTO(Balanco balanco) {
 		this.id = balanco.getId();
-		this.mesAno = balanco.getMesAno();
+		this.ano = balanco.getMesAno().getYear();
+		this.mes = balanco.getMesAno().getMonthValue();
 		this.atual = false;
 	}
 
@@ -34,12 +36,20 @@ public class BalancoFaixaDTO {
 		this.id = id;
 	}
 
-	public YearMonth getMesAno() {
-		return mesAno;
+	public Integer getMes() {
+		return mes;
 	}
 
-	public void setMesAno(YearMonth mesAno) {
-		this.mesAno = mesAno;
+	public void setMes(Integer mes) {
+		this.mes = mes;
+	}
+
+	public Integer getAno() {
+		return ano;
+	}
+
+	public void setAno(Integer ano) {
+		this.ano = ano;
 	}
 
 	public Boolean getAtual() {
