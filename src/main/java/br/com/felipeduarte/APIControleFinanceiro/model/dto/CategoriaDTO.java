@@ -2,6 +2,8 @@ package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -16,6 +18,7 @@ public class CategoriaDTO {
 	@ApiModelProperty(value = "Descrição da categoria")
 	private String descricao;
 	
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	@ApiModelProperty(value = "Data de cadastro da categoria")
 	private LocalDate dataCadastro;
 	

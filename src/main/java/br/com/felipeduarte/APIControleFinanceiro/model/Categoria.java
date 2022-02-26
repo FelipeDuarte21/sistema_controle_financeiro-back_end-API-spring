@@ -39,6 +39,9 @@ public class Categoria implements Serializable {
 	@OneToMany(mappedBy = "categoria",fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	private List<Balanco> balancos = new ArrayList<>();
 	
+	@OneToMany(mappedBy = "categoria",fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	private List<AnotacaoCategoria> anotações = new ArrayList<>();
+	
 	public Categoria() {
 		
 	}
