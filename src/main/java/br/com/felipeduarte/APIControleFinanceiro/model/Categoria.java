@@ -42,6 +42,9 @@ public class Categoria implements Serializable {
 	@OneToMany(mappedBy = "categoria",fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	private List<AnotacaoCategoria> anotações = new ArrayList<>();
 	
+	@OneToMany(mappedBy = "categoria", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	private List<Parcelado> parcelados = new ArrayList<>();
+	
 	public Categoria() {
 		
 	}
@@ -104,6 +107,22 @@ public class Categoria implements Serializable {
 
 	public void setBalancos(List<Balanco> balancos) {
 		this.balancos = balancos;
+	}
+
+	public List<AnotacaoCategoria> getAnotações() {
+		return anotações;
+	}
+
+	public void setAnotações(List<AnotacaoCategoria> anotações) {
+		this.anotações = anotações;
+	}
+
+	public List<Parcelado> getParcelados() {
+		return parcelados;
+	}
+
+	public void setParcelados(List<Parcelado> parcelados) {
+		this.parcelados = parcelados;
 	}
 
 	@Override

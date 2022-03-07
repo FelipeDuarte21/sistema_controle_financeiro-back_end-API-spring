@@ -77,7 +77,7 @@ public class LancamentoService {
 		var lancamento = new Lancamento(lancamentoDTO);
 		lancamento.setTipo(tipoLancamento);
 		lancamento.setBalanco(balanco);
-		lancamento.setDataRegistro(LocalDateTime.now(clock.getZone()));
+		lancamento.setDataRegistro(LocalDateTime.now(clock));
 		
 		balanco.addLancamento(lancamento);
 		this.balancoService.atualizarSaldo(balanco);
