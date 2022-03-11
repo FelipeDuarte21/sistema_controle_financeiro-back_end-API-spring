@@ -3,13 +3,26 @@ package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class ParceladoSalvarDTO {
 	
+	@ApiModelProperty(value = "titulo do parcelado")
 	private String titulo;
+	
+	@ApiModelProperty(value = "descrição do parcelado")
 	private String descricao;
+	
+	@ApiModelProperty(value = "data de realização do parcelado")
 	private LocalDate data;
+	
+	@ApiModelProperty(value = "quantidade total de parcelas do parcelado")
 	private Integer totalParcela;
+	
+	@ApiModelProperty(value = "data do vencimento da primeira parcela do parcelado")
 	private LocalDate dataVencimentoPrimeiraParcela;
+	
+	@ApiModelProperty(value = "valor das parcelas do parcelado")
 	private BigDecimal valor;
 	
 	public ParceladoSalvarDTO() {

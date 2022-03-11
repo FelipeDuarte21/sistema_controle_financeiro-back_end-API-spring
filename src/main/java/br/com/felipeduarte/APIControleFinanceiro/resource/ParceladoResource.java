@@ -26,6 +26,9 @@ import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFou
 import br.com.felipeduarte.APIControleFinanceiro.service.ParceladoService;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("/api/categorias/{idCategoria}/parcelados")
@@ -38,8 +41,15 @@ public class ParceladoResource {
 		this.service = service;
 	}
 	
+	@ApiOperation(value = "Cadastra uma novo parcelamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Parcelamento cadastrado com sucesso"),
+			@ApiResponse(code = 400, message = "Categoria não encontrada"),
+			@ApiResponse(code = 401, message = "Acesso Indevido"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PostMapping
+	@PostMapping(produces = "application/json",consumes = "application/json")
 	public ResponseEntity<ParceladoDTO> cadastrar(@PathVariable(name = "idCategoria") Long idCategoria, 
 			@RequestBody @Valid ParceladoSalvarDTO parceladoDTO, UriComponentsBuilder uriBuilder){
 		
@@ -59,8 +69,16 @@ public class ParceladoResource {
 		
 	}
 	
+
+	@ApiOperation(value = "Atualiza um parcelamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Parcelamento atualizado com sucesso"),
+			@ApiResponse(code = 401, message = "Acesso Indevido"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Parcelamento não encontrado"),
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PutMapping(value = "/{id}")
+	@PutMapping(value = "/{id}", produces = "application/json",consumes = "application/json")
 	public ResponseEntity<ParceladoDTO> atualizar(@PathVariable(name = "id") Long id, 
 			@RequestBody @Valid ParceladoSalvarDTO parceladoDTO){
 		
@@ -79,6 +97,13 @@ public class ParceladoResource {
 		
 	}
 	
+	@ApiOperation(value = "Exclui um parcelamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Parcelamento excluído com sucesso"),
+			@ApiResponse(code = 401, message = "Acesso Indevido"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Parcelamento não encontrado"),
+	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> excluir(@PathVariable(name = "id") Long id){
@@ -95,8 +120,15 @@ public class ParceladoResource {
 		
 	}
 	
+	@ApiOperation(value = "Buscar um parcelamento pela identificação")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Parcelamento encontrado com sucesso"),
+			@ApiResponse(code = 401, message = "Acesso Indevido"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Parcelamento não encontrado"),
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping(value = "/{id}")
+	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<ParceladoDTO> buscarPorId(@PathVariable(name = "id") Long id){
 		
 		try {
@@ -111,8 +143,14 @@ public class ParceladoResource {
 		
 	}
 	
+	@ApiOperation(value = "Buscar página de parcelamentos")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Pagina de parcelamento encontrada com sucesso"),
+			@ApiResponse(code = 400, message = "Erro nos parametros"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@GetMapping()
+	@GetMapping(produces = "application/json")
 	public ResponseEntity<Page<ParceladoDTO>> listar(
 			@PathVariable(name = "idCategoria") Long idCategoria, 
 			@RequestParam(defaultValue = "0") Integer page, 
@@ -134,6 +172,13 @@ public class ParceladoResource {
 		
 	}
 	
+	@ApiOperation(value = "Registrar pagamento da parcela do parcelamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Parcela paga com sucesso"),
+			@ApiResponse(code = 400, message = "Erro nos parametros"),
+			@ApiResponse(code = 401, message = "Acesso Indevido"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@PatchMapping("/parcelas/{idParcela}")
 	public ResponseEntity<ParcelaDTO> pagarParcela(@PathVariable(name = "idCategoria") Long idCategoria,

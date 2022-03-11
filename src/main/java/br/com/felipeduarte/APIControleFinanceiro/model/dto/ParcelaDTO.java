@@ -6,21 +6,34 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Parcela;
+import io.swagger.annotations.ApiModelProperty;
 
 public class ParcelaDTO {
 	
+	@ApiModelProperty(value = "Identificação da parcela")
 	private Long id;
+	
+	@ApiModelProperty(value = "Número da parcela")
 	private Integer numero;
+	
+	@ApiModelProperty(value = "Valor da parcela")
 	private BigDecimal valor;
 	
+	@ApiModelProperty(value = "data de vencimento da parcela")
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate dataVencimento;
 	
+	@ApiModelProperty(value = "data de pagamento da parcela")
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate dataPagamento;
 	
+	@ApiModelProperty(value = "Parcela paga")
 	private Boolean pago;
+	
+	@ApiModelProperty(value = "Primeira parcela")
 	private Boolean primeiro;
+	
+	@ApiModelProperty(value = "Ultima parcela")
 	private Boolean ultimo;
 	
 	public ParcelaDTO() {

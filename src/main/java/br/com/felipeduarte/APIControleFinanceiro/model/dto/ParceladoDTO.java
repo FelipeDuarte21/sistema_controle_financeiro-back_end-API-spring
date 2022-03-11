@@ -9,21 +9,34 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Parcelado;
+import io.swagger.annotations.ApiModelProperty;
 
 public class ParceladoDTO {
 	
+	@ApiModelProperty(value = "Identificação do parcelado")
 	private Long id;
+	
+	@ApiModelProperty(value = "titulo do parcelado")
 	private String titulo;
+	
+	@ApiModelProperty(value = "descrição do parcelado")
 	private String descricao;
 	
+	@ApiModelProperty(value = "data de realização do parcelado")
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate data;
 	
+	@ApiModelProperty(value = "data que foi registrado o parcelado")
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime dataRegistro;
 	
+	@ApiModelProperty(value = "Parcelado pago")
 	private Boolean quitado;
+	
+	@ApiModelProperty(value = "Categoria a qual pertence o parcelado")
 	private CategoriaDTO categoria;
+	
+	@ApiModelProperty(value = "parcelas do parcelado")
 	private List<ParcelaDTO> parcelas = new ArrayList<>();
 	
 	public ParceladoDTO() {
