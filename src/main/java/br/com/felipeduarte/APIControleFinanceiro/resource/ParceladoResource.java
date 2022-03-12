@@ -180,7 +180,7 @@ public class ParceladoResource {
 			@ApiResponse(code = 403, message = "Acesso negado"),
 	})
 	@PreAuthorize("hasAnyRole('USER')")
-	@PatchMapping("/parcelas/{idParcela}")
+	@PatchMapping("{idParcelado}/parcelas/{idParcela}")
 	public ResponseEntity<ParcelaDTO> pagarParcela(@PathVariable(name = "idCategoria") Long idCategoria,
 			@PathVariable(name = "idParcela") Long idParcela){
 		
@@ -189,6 +189,37 @@ public class ParceladoResource {
 			var parcela = this.service.pagarParcela(idCategoria, idParcela);
 			
 			return ResponseEntity.ok(parcela);
+			
+		}catch (IllegalParameterException  ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}catch (ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
+		}
+		
+	}
+	
+	@ApiOperation(value = "Buscar Página de Parcelas do Parcelamento")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Pagina retornada com sucesso"),
+			@ApiResponse(code = 400, message = "Erro nos parametros"),
+			@ApiResponse(code = 401, message = "Acesso Indevido"),
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Parcelamento não encontrado")
+	})
+	@PreAuthorize("hasAnyRole('USER')")
+	@GetMapping(value = "{idParcelado}/parcelas", produces = "application/json")
+	public ResponseEntity<Page<ParcelaDTO>> listarParcelas(@PathVariable(name = "idCategoria") Long idCategoria,
+			@PathVariable(name = "idParcelado") Long idParcelado, 
+			@RequestParam(defaultValue = "0") Integer page, 
+			@RequestParam(defaultValue = "6") Integer size, 
+			@RequestParam(defaultValue = "2") Integer order){
+		
+		try {
+			
+			var pagParcelas = this.service.listarParcelas(idCategoria, idParcelado, page, size, order);
+			
+			return ResponseEntity.ok(pagParcelas);
 			
 		}catch (IllegalParameterException  ex) {
 			throw new ObjectBadRequestException(ex.getMessage());

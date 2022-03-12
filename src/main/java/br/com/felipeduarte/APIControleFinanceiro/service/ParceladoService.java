@@ -218,5 +218,35 @@ public class ParceladoService {
 		return new ParcelaDTO(parcela);
 		
 	}
+	
+	public Page<ParcelaDTO> listarParcelas(Long idCategoria, Long idParcelado, 
+			Integer page, Integer size, Integer order){
+		
+		var optParcelado = this.repository.findById(idParcelado);
+		
+		if(!optParcelado.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! Parcelado não encontrado para o id informado!");
+		
+		if(page < 0) 
+			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
+		
+		if(size < 1) 
+			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
+		
+		var direction = Direction.ASC;
+		
+		if(order == 2) direction = Direction.DESC;
+		
+		var pageable = PageRequest.of(page, size,direction,"dataVencimento");
+		
+		//verificar permissão de conteudo
+		this.restricaoService.verificarPermissaoConteudo(optParcelado.get().getCategoria());
+		
+		var pagParcelas = this.parcelaRepository.findByParcelado(optParcelado.get(), pageable);
+		
+		return pagParcelas.map(ParcelaDTO::new);
+		
+	}
 
 }
