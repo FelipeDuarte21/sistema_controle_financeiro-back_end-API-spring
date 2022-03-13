@@ -1,7 +1,6 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -18,6 +17,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Parcela;
 import br.com.felipeduarte.APIControleFinanceiro.model.Parcelado;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParcelaDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParcelaPagarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParceladoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParceladoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
@@ -172,7 +172,7 @@ public class ParceladoService {
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
-	public ParcelaDTO pagarParcela(Long idCategoria, Long idParcela) {
+	public ParcelaDTO pagarParcela(Long idCategoria, Long idParcela, ParcelaPagarDTO parcelaPagarDTO) {
 		
 		var optParcela = this.parcelaRepository.findById(idParcela);
 		
@@ -185,8 +185,10 @@ public class ParceladoService {
 		
 		var parcela = optParcela.get();
 		
+		parcela.setValor(parcelaPagarDTO.getValor());
+		parcela.setDataVencimento(parcelaPagarDTO.getDataVencimento());
+		parcela.setDataPagamento(parcelaPagarDTO.getDataPagamento());
 		parcela.setPago(true);
-		parcela.setDataPagamento(LocalDate.now(clock));
 		this.parcelaRepository.save(parcela);
 		
 		var parcelado = parcela.getParcelado();

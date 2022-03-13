@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParcelaDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParcelaPagarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParceladoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParceladoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
@@ -182,11 +183,11 @@ public class ParceladoResource {
 	@PreAuthorize("hasAnyRole('USER')")
 	@PatchMapping("{idParcelado}/parcelas/{idParcela}")
 	public ResponseEntity<ParcelaDTO> pagarParcela(@PathVariable(name = "idCategoria") Long idCategoria,
-			@PathVariable(name = "idParcela") Long idParcela){
+			@PathVariable(name = "idParcela") Long idParcela, @RequestBody @Valid ParcelaPagarDTO parcelaPagarDTO){
 		
 		try {
 			
-			var parcela = this.service.pagarParcela(idCategoria, idParcela);
+			var parcela = this.service.pagarParcela(idCategoria, idParcela, parcelaPagarDTO);
 			
 			return ResponseEntity.ok(parcela);
 			
