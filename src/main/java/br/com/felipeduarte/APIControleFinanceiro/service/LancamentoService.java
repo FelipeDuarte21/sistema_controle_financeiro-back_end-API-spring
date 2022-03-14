@@ -29,6 +29,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.ArquivoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvarDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.TransferenciaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
 import br.com.felipeduarte.APIControleFinanceiro.repository.LancamentoRepository;
@@ -47,16 +48,20 @@ public class LancamentoService {
 	private TipoLancamentoService tipoLancamentoService;
 	
 	private RestricaoService restricaoService;
+	
+	private LancamentoSalvoService lancamentoSalvoService;
 
 	
 	@Autowired
 	public LancamentoService(Clock clock, LancamentoRepository repository, BalancoService balancoService,
-			TipoLancamentoService tipoLancamentoService, RestricaoService restricaoService) {
+			TipoLancamentoService tipoLancamentoService, RestricaoService restricaoService,
+			LancamentoSalvoService lancamentoSalvoService) {
 		this.clock = clock;
 		this.repository = repository;
 		this.balancoService = balancoService;
 		this.tipoLancamentoService = tipoLancamentoService;
 		this.restricaoService = restricaoService;
+		this.lancamentoSalvoService = lancamentoSalvoService;
 	}
 
 	@Transactional(rollbackOn = Exception.class)
@@ -83,6 +88,11 @@ public class LancamentoService {
 		this.balancoService.atualizarSaldo(balanco);
 		
 		lancamento = this.repository.save(lancamento);
+		
+		if(lancamentoDTO.isSalvar()) {
+			var lancamentoSalvo = new LancamentoSalvoSalvarDTO(lancamento);
+			this.lancamentoSalvoService.cadastrar(balanco.getCategoria().getId(), lancamentoSalvo);
+		}
 		
 		return new LancamentoDTO(lancamento);
 	}

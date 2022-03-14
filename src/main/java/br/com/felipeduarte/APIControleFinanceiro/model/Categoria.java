@@ -45,6 +45,9 @@ public class Categoria implements Serializable {
 	@OneToMany(mappedBy = "categoria", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	private List<Parcelado> parcelados = new ArrayList<>();
 	
+	@OneToMany(mappedBy = "categoria", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	private List<LancamentoSalvo> lancamentosSalvos = new ArrayList<>();
+	
 	public Categoria() {
 		
 	}
@@ -123,6 +126,14 @@ public class Categoria implements Serializable {
 
 	public void setParcelados(List<Parcelado> parcelados) {
 		this.parcelados = parcelados;
+	}
+
+	public List<LancamentoSalvo> getLancamentosSalvos() {
+		return lancamentosSalvos;
+	}
+
+	public void setLancamentosSalvos(List<LancamentoSalvo> lancamentosSalvos) {
+		this.lancamentosSalvos = lancamentosSalvos;
 	}
 
 	@Override

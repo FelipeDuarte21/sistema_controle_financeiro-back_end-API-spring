@@ -31,6 +31,9 @@ public class LancamentoSalvarDTO {
 	@NotNull(message = "Informe o valor do tipo")
 	private Integer tipo;
 	
+	@ApiModelProperty(value = "Salvar o lançamento ou não")
+	private boolean salvar;
+	
 	public LancamentoSalvarDTO() {
 		
 	}
@@ -81,6 +84,14 @@ public class LancamentoSalvarDTO {
 
 	public void setTipo(Integer tipo) {
 		this.tipo = tipo;
+	}
+
+	public boolean isSalvar() {
+		return salvar;
+	}
+
+	public void setSalvar(boolean salvar) {
+		this.salvar = salvar;
 	}
 
 }
