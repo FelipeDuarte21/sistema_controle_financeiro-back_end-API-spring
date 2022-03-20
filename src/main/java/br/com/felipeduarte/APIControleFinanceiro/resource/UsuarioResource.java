@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
@@ -74,7 +75,7 @@ public class UsuarioResource {
 	@PreAuthorize("hasAnyRole('USER')")
 	@PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<UsuarioDTO> update(@PathVariable(name = "id") Long id, 
-			@RequestBody @Valid UsuarioSalvarDTO usuarioDTO){
+			@RequestBody @Valid UsuarioAtualizarDTO usuarioDTO){
 		
 		try {
 			
@@ -122,7 +123,7 @@ public class UsuarioResource {
 			@ApiResponse(code = 403, message = "Acesso negado"),
 			@ApiResponse(code = 404, message = "Usuário não encontrado")
 	})
-	@PreAuthorize("hasAnyRole('ADMIN')")
+	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<UsuarioDTO> buscarPorId(@PathVariable(name = "id") Long id){
 		
@@ -131,6 +132,9 @@ public class UsuarioResource {
 			var usuario = this.service.buscarPorId(id);
 			
 			return ResponseEntity.ok(usuario);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
 			
 		}catch(ObjectNotFoundFromParameterException ex) {
 			throw new ObjectNotFoundException(ex.getMessage());

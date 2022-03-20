@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
@@ -59,7 +60,7 @@ public class UsuarioService {
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
-	public UsuarioDTO atualizar(Long id, UsuarioSalvarDTO usuarioDTO) {
+	public UsuarioDTO atualizar(Long id, UsuarioAtualizarDTO usuarioDTO) {
 		
 		if(id == null) throw new IllegalParameterException("Erro! id não pode ser nullo");
 		if(id == 0) throw new IllegalParameterException("Erro! id não pode ser 0");
@@ -84,11 +85,22 @@ public class UsuarioService {
 		var usuario = optUsuario.get();
 		usuario.setNome(usuarioDTO.getNome());
 		usuario.setEmail(usuarioDTO.getEmail());
-		usuario.setSenha(bCrypt.encode(usuarioDTO.getSenha()));
+		
+		if(!usuarioDTO.getSenha().isEmpty()) {
+			
+			var senha = usuarioDTO.getSenha();
+			
+			if(senha.length() < 8 || senha.length() > 15)
+				throw new IllegalParameterException("Erro! O campo senha deve ter entre 8 a 15 caracteres");
+			
+			usuario.setSenha(bCrypt.encode(usuarioDTO.getSenha()));
+			
+		}
 		
 		usuario = this.repository.save(usuario);
 		
 		return new UsuarioDTO(usuario);
+		
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
@@ -113,6 +125,9 @@ public class UsuarioService {
 		
 		if(!optUsuario.isPresent()) 
 			throw new ObjectNotFoundFromParameterException("Erro! usuario não encontrado para id informado!");
+		
+		//Verifica se usuario é o mesmo que está logado
+		this.restricaoService.verificarUsuario(optUsuario.get().getId());
 		
 		return new UsuarioDTO(optUsuario.get());
 		
