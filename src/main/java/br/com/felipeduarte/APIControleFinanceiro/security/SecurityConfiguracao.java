@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	
-	private static String[] PATH_PUBLICO = {"/api/usuarios","/login"};
+	private static String[] PATH_PUBLICO = {"/api/usuarios","/login", "/api/auth/reset-senha"};
 	private static String[] PATH_DOCUMENTATION = {
 			"/swagger-resources/**",
 	        "/swagger-ui.html",
