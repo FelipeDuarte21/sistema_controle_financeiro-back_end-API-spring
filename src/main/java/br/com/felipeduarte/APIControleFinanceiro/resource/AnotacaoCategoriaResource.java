@@ -4,6 +4,9 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -23,7 +25,6 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.AnotacaoCategoriaSalv
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectNotFoundException;
 import br.com.felipeduarte.APIControleFinanceiro.service.AnotacaoCategoriaService;
-import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -172,26 +173,24 @@ public class AnotacaoCategoriaResource {
 	@ApiOperation(value = "Busca uma página de anotação da categoria")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Página de anotações retornada com sucesso"),
-			@ApiResponse(code = 400, message = "Erro nos parametros informados não encontrada"),
 			@ApiResponse(code = 401, message = "Acesso não autorizado"),
 			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Categoria não encontrada")
 	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(produces = "application/json")
 	public ResponseEntity<Page<AnotacaoCategoriaDTO>> listar(
 			@PathVariable(name = "idCategoria") Long idCategoria, 
-			@RequestParam(defaultValue = "0") Integer page, 
-			@RequestParam(defaultValue = "6") Integer size, 
-			@RequestParam(defaultValue = "1") Integer order) {
+			@PageableDefault(page = 0, size = 10, direction = Direction.ASC, sort = "data") Pageable paginacao) {
 		
 		try {
 			
-			var pagAnotacoes = this.service.listar(idCategoria, page, size, order);
+			var pagAnotacoes = this.service.listar(idCategoria, paginacao);
 			
 			return ResponseEntity.ok(pagAnotacoes);
 			
-		}catch(IllegalParameterException ex) {
-			throw new ObjectBadRequestException(ex.getMessage());
+		}catch (ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
 			
 		}
 		

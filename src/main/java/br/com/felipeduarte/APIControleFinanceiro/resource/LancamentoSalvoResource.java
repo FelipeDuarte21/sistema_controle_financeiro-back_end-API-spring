@@ -4,6 +4,9 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -29,7 +31,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @RestController
-@RequestMapping("/api/lancamentos-salvos")
+@RequestMapping("/api/categorias/{idCategoria}/lancamentos-salvos")
 public class LancamentoSalvoResource {
 
 	private LancamentoSalvoService service;
@@ -44,12 +46,13 @@ public class LancamentoSalvoResource {
 			@ApiResponse(code = 201, message = "Lancamento salvo com sucesso"),
 			@ApiResponse(code = 400, message = "Erro nos parametros recebidos"),
 			@ApiResponse(code = 401, message = "Acesso Indevido"),
-			@ApiResponse(code = 403, message = "Acesso negado")
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Categoria não encontrada"),
 	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@PostMapping(produces = "application/json", consumes = "application/json")
 	public ResponseEntity<LancamentoSalvoDTO> cadastrar(
-			@RequestParam Long idCategoria, 
+			@PathVariable(name = "idCategoria") Long idCategoria, 
 			@RequestBody @Valid LancamentoSalvoSalvarDTO lancamentoDTO, 
 			UriComponentsBuilder uriBuilder){
 		
@@ -61,6 +64,9 @@ public class LancamentoSalvoResource {
 					.buildAndExpand(lancamentoSalvo.getId()).toUri();
 			
 			return ResponseEntity.created(uri).body(lancamentoSalvo);
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
 			
 		}catch (IllegalParameterException ex) {
 			throw new ObjectBadRequestException(ex.getMessage());
@@ -89,6 +95,9 @@ public class LancamentoSalvoResource {
 			
 		}catch(ObjectNotFoundFromParameterException ex) {
 			throw new ObjectNotFoundException(ex.getMessage());
+			
+		}catch (IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
 			
 		}
 		
@@ -147,24 +156,20 @@ public class LancamentoSalvoResource {
 			@ApiResponse(code = 200, message = "Pagina encontrada com sucesso"),
 			@ApiResponse(code = 400, message = "Erro nos parâmetros passados"),
 			@ApiResponse(code = 401, message = "Acesso Indevido"),
-			@ApiResponse(code = 403, message = "Acesso negado")
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Categoria não encontrada"),
 	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(produces = "application/json")
 	public ResponseEntity<Page<LancamentoSalvoDTO>> listar(
-			@RequestParam Long idCategoria,
-			@RequestParam(defaultValue = "0") Integer page, 
-			@RequestParam(defaultValue = "6") Integer size, 
-			@RequestParam(defaultValue = "1") Integer order){
+			@PathVariable(name = "idCategoria") Long idCategoria,
+			@PageableDefault(page = 0, size = 10, direction = Direction.ASC, sort = "nome") Pageable paginacao){
 		
 		try {
 			
-			var pagLancamentoSalvo = this.service.listar(idCategoria, page, size, order);
+			var pagLancamentoSalvo = this.service.listar(idCategoria, paginacao);
 			
 			return ResponseEntity.ok(pagLancamentoSalvo);
-			
-		}catch (IllegalParameterException ex) {
-			throw new ObjectBadRequestException(ex.getMessage());
 			
 		}catch (ObjectNotFoundFromParameterException ex) {
 			throw new ObjectNotFoundException(ex.getMessage());

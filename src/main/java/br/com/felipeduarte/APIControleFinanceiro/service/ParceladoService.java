@@ -2,15 +2,12 @@ package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Parcela;
@@ -23,7 +20,6 @@ import br.com.felipeduarte.APIControleFinanceiro.model.dto.ParceladoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
 import br.com.felipeduarte.APIControleFinanceiro.repository.ParcelaRepository;
 import br.com.felipeduarte.APIControleFinanceiro.repository.ParceladoRepository;
-import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
@@ -145,29 +141,13 @@ public class ParceladoService {
 		
 	}
 	
-	public Page<ParceladoDTO> listar(Long idCategoria, Integer page, Integer size, Integer order){
-		
-		if(page < 0) 
-			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
-		
-		if(size < 1) 
-			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
-		
-		var direction = Direction.ASC;
-		
-		if(order == 2) direction = Direction.DESC;
-		
-		var pageable = PageRequest.of(page, size,direction,"dataRegistro");
+	public Page<ParceladoDTO> listar(Long idCategoria, Pageable paginacao){
 		
 		var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
 		
-		var pageParcelados = this.repository.findByCategoria(categoria, pageable);
+		var pageParcelados = this.repository.findByCategoria(categoria, paginacao);
 		
-		var pageParceladosDTO = new PageImpl<ParceladoDTO>(
-				pageParcelados.getContent().stream().map(ParceladoDTO::new).collect(Collectors.toList()),
-					pageParcelados.getPageable(),pageParcelados.getTotalElements());
-		
-		return pageParceladosDTO;
+		return pageParcelados.map(ParceladoDTO::new);
 		
 	}
 	
@@ -221,8 +201,7 @@ public class ParceladoService {
 		
 	}
 	
-	public Page<ParcelaDTO> listarParcelas(Long idCategoria, Long idParcelado, 
-			Integer page, Integer size, Integer order){
+	public Page<ParcelaDTO> listarParcelas(Long idCategoria, Long idParcelado, Pageable paginacao){
 		
 		var optParcelado = this.repository.findById(idParcelado);
 		
@@ -230,22 +209,10 @@ public class ParceladoService {
 			throw new ObjectNotFoundFromParameterException(
 					"Erro! Parcelado não encontrado para o id informado!");
 		
-		if(page < 0) 
-			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
-		
-		if(size < 1) 
-			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
-		
-		var direction = Direction.ASC;
-		
-		if(order == 2) direction = Direction.DESC;
-		
-		var pageable = PageRequest.of(page, size,direction,"dataVencimento");
-		
 		//verificar permissão de conteudo
 		this.restricaoService.verificarPermissaoConteudo(optParcelado.get().getCategoria());
 		
-		var pagParcelas = this.parcelaRepository.findByParcelado(optParcelado.get(), pageable);
+		var pagParcelas = this.parcelaRepository.findByParcelado(optParcelado.get(), paginacao);
 		
 		return pagParcelas.map(ParcelaDTO::new);
 		

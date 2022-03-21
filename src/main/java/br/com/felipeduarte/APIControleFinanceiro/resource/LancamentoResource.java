@@ -5,6 +5,9 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -156,25 +158,24 @@ public class LancamentoResource {
 			@ApiResponse(code = 200, message = "Página retorna com sucesso"),
 			@ApiResponse(code = 400, message = "Erro nos paramêtros recebidos"),
 			@ApiResponse(code = 401, message = "Acesso não autorizado"),
-			@ApiResponse(code = 403, message = "Acesso negado")
+			@ApiResponse(code = 403, message = "Acesso negado"),
+			@ApiResponse(code = 404, message = "Balanço não encontrado")
 	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(produces = "application/json")
 	public ResponseEntity<Page<LancamentoDTO>> listar(
 			@PathVariable(name = "idBalanco") Long idBalanco,
-			@RequestParam(defaultValue = "0") Integer page,
-			@RequestParam(defaultValue = "6") Integer size,
-			@RequestParam(defaultValue = "2") Integer order
+			@PageableDefault(page = 0, size = 10, direction = Direction.ASC, sort = "dataLancamento") Pageable paginacao
 		){
 		
 		try {
 			
-			Page<LancamentoDTO> lancamentos = this.service.listar(idBalanco, page, size, order);
+			var pageLancamentos = this.service.listar(idBalanco, paginacao);
 		
-			return ResponseEntity.ok(lancamentos);
+			return ResponseEntity.ok(pageLancamentos);
 			
-		}catch(IllegalParameterException ex) {
-			throw new ObjectBadRequestException(ex.getMessage());
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new ObjectNotFoundException(ex.getMessage());
 			
 		}
 		

@@ -2,13 +2,12 @@ package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.LancamentoSalvo;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LancamentoSalvoSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.LancamentoSalvoRepository;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
@@ -35,18 +34,18 @@ public class LancamentoSalvoService {
 	
 	public LancamentoSalvoDTO cadastrar(Long idCategoria, LancamentoSalvoSalvarDTO lancamentoDTO) {
 		
+		var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
+		
 		try {
-			
-			var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
 			
 			var tipoLancamento = this.tipoLancamentoService.buscarPorValor(lancamentoDTO.getTipo());
 			
 			var lancamentoSalvo = new LancamentoSalvo(lancamentoDTO);
 			lancamentoSalvo.setCategoria(categoria);
 			lancamentoSalvo.setTipo(tipoLancamento);
-			
+				
 			lancamentoSalvo = this.repository.save(lancamentoSalvo);
-			
+				
 			return new LancamentoSalvoDTO(lancamentoSalvo);
 			
 		}catch(ObjectNotFoundFromParameterException ex) {
@@ -72,13 +71,20 @@ public class LancamentoSalvoService {
 		lancamento.setDescricao(lancamentoDTO.getDescricao());
 		lancamento.setValor(lancamentoDTO.getValor());
 		
-		var tipoLancamento = this.tipoLancamentoService.buscarPorValor(lancamentoDTO.getTipo());
-		
-		lancamento.setTipo(tipoLancamento);
-		
-		lancamento = this.repository.save(lancamento);
-		
-		return new LancamentoSalvoDTO(lancamento);
+		try {
+			
+			var tipoLancamento = this.tipoLancamentoService.buscarPorValor(lancamentoDTO.getTipo());
+			
+			lancamento.setTipo(tipoLancamento);
+			
+			lancamento = this.repository.save(lancamento);
+			
+			return new LancamentoSalvoDTO(lancamento);
+
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new IllegalParameterException(ex.getMessage());
+			
+		}
 		
 	}
 	
@@ -112,31 +118,16 @@ public class LancamentoSalvoService {
 		
 	}
 	
-	public Page<LancamentoSalvoDTO> listar(Long idCategoria, Integer page, Integer size, Integer ordem) {
+	public Page<LancamentoSalvoDTO> listar(Long idCategoria, Pageable paginacao) {
 		
-		try {
+		var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
 			
-			if(page < 0) 
-				throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
+		//verificaPermissao
+		this.restricaoService.verificarPermissaoConteudo(categoria);
 			
-			if(size < 1) 
-				throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
+		var pagLancamentoSalvo = this.repository.findByCategoria(categoria, paginacao);
 			
-			var pageable = PageRequest.of(page, size, Direction.ASC, "nome");
-			
-			var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
-			
-			//verificaPermissao
-			this.restricaoService.verificarPermissaoConteudo(categoria);
-			
-			var pagLancamentoSalvo = this.repository.findByCategoria(categoria, pageable);
-			
-			return pagLancamentoSalvo.map(LancamentoSalvoDTO::new);
-			
-		}catch(ObjectNotFoundFromParameterException ex) {
-			throw new IllegalParameterException(ex.getMessage());
-			
-		}
+		return pagLancamentoSalvo.map(LancamentoSalvoDTO::new);
 		
 	}
 

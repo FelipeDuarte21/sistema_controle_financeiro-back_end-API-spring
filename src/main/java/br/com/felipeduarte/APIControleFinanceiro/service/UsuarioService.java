@@ -1,15 +1,12 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -151,27 +148,11 @@ public class UsuarioService {
 		
 	}
 	
-	public Page<UsuarioDTO> listar(int page, int size, int order){
+	public Page<UsuarioDTO> listar(Pageable paginacao){
 		
-		if(page < 0) 
-			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
+		var pageUsuarios = this.repository.findAll(paginacao);
 		
-		if(size < 1) 
-			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
-		
-		var direcao = Direction.ASC;
-		
-		if(order == 2) direcao = Direction.DESC;
-		
-		var pageable = PageRequest.of(page, size, direcao, "nome");
-		
-		var pageUsuarios = this.repository.findAll(pageable);
-		
-		var pageUsuarioDTO = new PageImpl<UsuarioDTO>(
-				pageUsuarios.getContent().stream().map(UsuarioDTO::new).collect(Collectors.toList()),
-					pageUsuarios.getPageable(),pageUsuarios.getTotalElements());
-		
-		return pageUsuarioDTO;
+		return pageUsuarios.map(UsuarioDTO::new);
 		
 	}
 	

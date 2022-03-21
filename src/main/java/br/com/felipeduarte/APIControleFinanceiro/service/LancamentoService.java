@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
@@ -20,9 +19,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
@@ -177,39 +174,16 @@ public class LancamentoService {
 		
 	}
 	
-	public Page<LancamentoDTO> listar(Long idBalanco, Integer page, Integer size, Integer order) {
+	public Page<LancamentoDTO> listar(Long idBalanco, Pageable paginacao) {
 		
-		if(page < 0) 
-			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
-		
-		if(size < 1) 
-			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
-		
-		try {
+		var balanco = this.balancoService.buscarPorId(idBalanco);
 			
-			var balanco = this.balancoService.buscarPorId(idBalanco);
+		//Verifica se a categoria do balanco pertence ao usuario logado
+		this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
 			
-			//Verifica se a categoria do balanco pertence ao usuario logado
-			this.restricaoService.verificarPermissaoConteudo(balanco.getCategoria());
+		var pageLancamentos = this.repository.findByBalanco(balanco, paginacao);
 			
-			var direction = Direction.ASC;
-			
-			if(order == 2) direction = Direction.DESC;
-			
-			var pageable = PageRequest.of(page, size,direction,"dataLancamento");
-			
-			var lancamentos = this.repository.findByBalanco(balanco, pageable);
-			
-			var pageLancamentosDTO = new PageImpl<LancamentoDTO>(
-					lancamentos.getContent().stream().map(LancamentoDTO::new).collect(Collectors.toList()),
-					lancamentos.getPageable(),lancamentos.getTotalElements()); 
-			
-			return pageLancamentosDTO;
-			
-		}catch(ObjectNotFoundFromParameterException ex) {
-			throw new IllegalParameterException(ex.getMessage());
-			
-		}
+		return pageLancamentos.map(LancamentoDTO::new);
 		
 	}
 	

@@ -9,9 +9,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
@@ -127,32 +125,18 @@ public class CategoriaService {
 					"Erro! Não existe categorias cadastradas para o usuario informado!");
 		
 		return categorias.stream().map(CategoriaDTO::new).collect(Collectors.toList());
+		
 	}
 	
-	public Page<CategoriaDTO> listar(int page, int size, int order){
-		
-		if(page < 0) 
-			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
-		
-		if(size < 1) 
-			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
-		
-		var direction = Direction.ASC;
-		
-		if(order == 2) direction = Direction.DESC;
-		
-		var pageable = PageRequest.of(page, size,direction,"nome");
+	public Page<CategoriaDTO> listar(Pageable paginacao){
 		
 		//Obtem o usuário logado
 		var usuario = this.restricaoService.getUsuario();
 		
-		var pageCategorias = this.repository.findByUsuario(usuario, pageable);
+		var pageCategorias = this.repository.findByUsuario(usuario, paginacao);
 		
-		var pageCategoriasDTO = new PageImpl<CategoriaDTO>(
-				pageCategorias.getContent().stream().map(CategoriaDTO::new).collect(Collectors.toList()),
-					pageCategorias.getPageable(),pageCategorias.getTotalElements());
+		return pageCategorias.map(CategoriaDTO::new);
 		
-		return pageCategoriasDTO;
 	}
 	
 	

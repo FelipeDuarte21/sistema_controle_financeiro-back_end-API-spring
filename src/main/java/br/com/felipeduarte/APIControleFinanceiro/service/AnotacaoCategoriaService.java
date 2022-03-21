@@ -1,19 +1,14 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.AnotacaoCategoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.AnotacaoCategoriaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.AnotacaoCategoriaSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.AnotacaoCategoriaRepository;
-import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
 import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
@@ -121,30 +116,13 @@ public class AnotacaoCategoriaService {
 		
 	}
 	
-	public Page<AnotacaoCategoriaDTO> listar(Long idCategoria, int page, int size, int order) {
+	public Page<AnotacaoCategoriaDTO> listar(Long idCategoria, Pageable paginacao) {
 		
 		var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
+	
+		var pagAnotacao = this.repository.findByCategoria(categoria, paginacao);
 		
-		if(page < 0) 
-			throw new IllegalParameterException("Erro! o número da página não pode ser negativo!");
-		
-		if(size < 1) 
-			throw new IllegalParameterException("Erro! a quantidade de elementos na página é no mínimo 1");
-		
-		var direction = Direction.ASC;
-		
-		if(order == 2) direction = Direction.DESC;
-		
-		var pageable = PageRequest.of(page, size,direction,"data");
-		
-		var pagAnotacao = this.repository.findByCategoria(categoria, pageable);
-		
-		var pageAnotacaoDTO = new PageImpl<AnotacaoCategoriaDTO>(
-				pagAnotacao.getContent().stream().map(AnotacaoCategoriaDTO::new)
-					.collect(Collectors.toList()),pagAnotacao.getPageable(),
-						pagAnotacao.getTotalElements());
-		
-		return pageAnotacaoDTO;
+		return pagAnotacao.map(AnotacaoCategoriaDTO::new);
 		
 	}
 

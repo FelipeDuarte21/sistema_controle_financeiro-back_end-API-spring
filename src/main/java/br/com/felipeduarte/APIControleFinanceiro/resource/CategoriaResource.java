@@ -4,6 +4,9 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -145,28 +147,18 @@ public class CategoriaResource {
 	@ApiOperation(value = "Busca uma página de categoria")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Retorna a página"),
-			@ApiResponse(code = 400, message = "Parâmetros recebidos inválidos"),
 			@ApiResponse(code = 401, message = "Acesso não autorizado"),
 			@ApiResponse(code = 403, message = "Acesso negado")
 	})
 	@PreAuthorize("hasAnyRole('USER')")
 	@GetMapping(produces = "application/json")
-	public ResponseEntity<Page<CategoriaDTO>> listar(
-		@RequestParam(defaultValue = "0") Integer page,
-		@RequestParam(defaultValue = "6") Integer size,
-		@RequestParam(defaultValue = "1") Integer order
+	public ResponseEntity<Page<CategoriaDTO>> listar(@PageableDefault
+			(page = 0, size = 10, direction = Direction.ASC, sort = "nome") Pageable paginacao
 		){
-		
-		try {
 			
-			var pageCategorias = this.service.listar(page, size, order);
+		var pageCategorias = this.service.listar(paginacao);
 			
-			return ResponseEntity.ok(pageCategorias);
-			
-		}catch(IllegalParameterException ex) {
-			throw new ObjectBadRequestException(ex.getMessage());
-			
-		}
+		return ResponseEntity.ok(pageCategorias);
 		
 	}
 	
