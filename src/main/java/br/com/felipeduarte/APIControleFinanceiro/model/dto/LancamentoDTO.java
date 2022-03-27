@@ -1,96 +1,131 @@
 package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-import org.hibernate.validator.constraints.Length;
+import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
+import io.swagger.annotations.ApiModelProperty;
 
 public class LancamentoDTO {
 	
+	@ApiModelProperty(value = "Identificação do lançamento")
 	private Long id;
 	
-	@NotNull(message = "Informe o campo nome")
-	@Length(min=3,max=80,message = "O campo nome deverá ter entre {min} e {max} caracteres!")
+	@ApiModelProperty(value = "Nome do lançamento")
 	private String nome;
 	
+	@ApiModelProperty(value = "Descrição do lançamento")
 	private String descricao;
 	
-	@NotNull(message = "Informa o campo valor")
-	private Double valor;
+	@ApiModelProperty(value = "Valor do lançamento")
+	private BigDecimal valor;
 	
-	private LocalDate dataCadastro;
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	@ApiModelProperty(value = "Data que ocorreu o lançamento")
+	private LocalDate data;
 	
-	private Boolean sugestao;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	@ApiModelProperty(value = "Data que foi registrado o lançamento")
+	private LocalDateTime dataRegistro;
 	
-	@NotNull(message = "Informe o id do balanco")
-	private Long balanco;
+	@ApiModelProperty(value = "Tipo do lançamento (Provento ou Despesa)")
+	private TipoLancamentoDTO tipo;
 	
-	@NotNull(message = "Informe o valor do tipo")
-	private Integer tipo;
+	@ApiModelProperty(value = "Balanço que pertence o lançamento")
+	private BalancoDTO balanco;
+	
+	public LancamentoDTO() {
+		
+	}
+	
+	public LancamentoDTO(Long id, String nome, String descricao, BigDecimal valor, LocalDate data,
+			LocalDateTime dataRegistro, TipoLancamentoDTO tipo, BalancoDTO balanco) {
+		this.id = id;
+		this.nome = nome;
+		this.descricao = descricao;
+		this.valor = valor;
+		this.data = data;
+		this.dataRegistro = dataRegistro;
+		this.tipo = tipo;
+		this.balanco = balanco;
+	}
+	
+	public LancamentoDTO(Lancamento lancamento) {
+		this.id = lancamento.getId();
+		this.nome = lancamento.getNome();
+		this.descricao = lancamento.getDescricao();
+		this.valor = lancamento.getValor();
+		this.data = lancamento.getDataLancamento();
+		this.dataRegistro = lancamento.getDataRegistro();
+		this.tipo = new TipoLancamentoDTO(lancamento.getTipo());
+		this.balanco = new BalancoDTO(lancamento.getBalanco());
+	}
 
 	public Long getId() {
 		return id;
 	}
-
+	
 	public void setId(Long id) {
 		this.id = id;
 	}
-
+	
 	public String getNome() {
 		return nome;
 	}
-
+	
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
-
+	
 	public String getDescricao() {
 		return descricao;
 	}
-
+	
 	public void setDescricao(String descricao) {
 		this.descricao = descricao;
 	}
-
-	public Double getValor() {
+	
+	public BigDecimal getValor() {
 		return valor;
 	}
-
-	public void setValor(Double valor) {
+	
+	public void setValor(BigDecimal valor) {
 		this.valor = valor;
 	}
-
-	public LocalDate getDataCadastro() {
-		return dataCadastro;
+	
+	public LocalDate getData() {
+		return data;
+	}
+	
+	public void setData(LocalDate data) {
+		this.data = data;
+	}
+	
+	public LocalDateTime getDataRegistro() {
+		return dataRegistro;
+	}
+	
+	public void setDataRegistro(LocalDateTime dataRegistro) {
+		this.dataRegistro = dataRegistro;
+	}
+	
+	public TipoLancamentoDTO getTipo() {
+		return tipo;
+	}
+	
+	public void setTipo(TipoLancamentoDTO tipo) {
+		this.tipo = tipo;
 	}
 
-	public void setDataCadastro(LocalDate dataCadastro) {
-		this.dataCadastro = dataCadastro;
-	}
-
-	public Boolean getSugestao() {
-		return sugestao;
-	}
-
-	public void setSugestao(Boolean sugestao) {
-		this.sugestao = sugestao;
-	}
-
-	public Long getBalanco() {
+	public BalancoDTO getBalanco() {
 		return balanco;
 	}
 
-	public void setBalanco(Long balanco) {
+	public void setBalanco(BalancoDTO balanco) {
 		this.balanco = balanco;
-	}
-
-	public Integer getTipo() {
-		return tipo;
-	}
-
-	public void setTipo(Integer tipo) {
-		this.tipo = tipo;
 	}
 
 }

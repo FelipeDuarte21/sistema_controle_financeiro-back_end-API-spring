@@ -4,13 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -20,7 +23,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	
-	private static String[] PATH_PUBLICO = {"/usuario","/login"};
+	private static String[] PATH_PUBLICO = {"/api/usuarios", "/api/auth/login", "/api/auth/reset-senha"};
+	private static String[] PATH_DOCUMENTATION = {
+			"/swagger-resources/**",
+	        "/swagger-ui.html",
+	        "/v2/api-docs",
+	        "/webjars/**",
+	        "favicon.ico",
+	};
 	
 	@Autowired
 	private UsuarioDetalheService usuarioDetalheService;
@@ -32,11 +42,15 @@ public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable().authorizeRequests()
 		.antMatchers(HttpMethod.POST,PATH_PUBLICO).permitAll()
-		.anyRequest().authenticated()
-		.and()
-		.addFilter(new JWTAutenticacaoFiltro(authenticationManager(), this.jwtUtil))
-		.addFilter(new JWTAutorizacaoFiltro(authenticationManager(), this.jwtUtil,this.usuarioDetalheService))
+		.anyRequest().authenticated().and()
+		.addFilterBefore(new JWTAutorizacaoFiltro(this.jwtUtil,this.usuarioDetalheService), 
+				UsernamePasswordAuthenticationFilter.class)
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
+	
+	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring().antMatchers(PATH_DOCUMENTATION);
 	}
 	
 	@Override
@@ -56,6 +70,7 @@ public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 		corsConfiguration.addAllowedMethod("GET");
 		corsConfiguration.addAllowedMethod("POST");
 		corsConfiguration.addAllowedMethod("PUT");
+		corsConfiguration.addAllowedMethod("PATCH");
 		corsConfiguration.addAllowedMethod("DELETE");
 		source.registerCorsConfiguration("/**",corsConfiguration.applyPermitDefaultValues());
 		return source;
@@ -64,6 +79,12 @@ public class SecurityConfiguracao extends WebSecurityConfigurerAdapter {
 	@Bean
 	BCryptPasswordEncoder bCryptPasswordEnconder() {
 		return new BCryptPasswordEncoder();
+	}
+	
+	@Override
+	@Bean
+	protected AuthenticationManager authenticationManager() throws Exception {
+		return super.authenticationManager();
 	}
 	
 }

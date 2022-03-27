@@ -30,8 +30,19 @@ public class TipoLancamento implements Serializable {
 	@OneToMany(mappedBy = "tipo",fetch = FetchType.LAZY)
 	private List<Lancamento> lancamentos = new ArrayList<>();
 	
+	@JsonIgnore
+	@OneToMany(mappedBy = "tipo", fetch = FetchType.LAZY)
+	private List<LancamentoSalvo> lancamentosSalvos = new ArrayList<>();
+	
 	public TipoLancamento() {
 		
+	}
+
+	public TipoLancamento(Long id, Integer valor, String nome) {
+		super();
+		this.id = id;
+		this.valor = valor;
+		this.nome = nome;
 	}
 
 	public Long getId() {
@@ -64,6 +75,14 @@ public class TipoLancamento implements Serializable {
 
 	public void setLancamentos(List<Lancamento> lancamentos) {
 		this.lancamentos = lancamentos;
+	}
+
+	public List<LancamentoSalvo> getLancamentosSalvos() {
+		return lancamentosSalvos;
+	}
+
+	public void setLancamentosSalvos(List<LancamentoSalvo> lancamentosSalvos) {
+		this.lancamentosSalvos = lancamentosSalvos;
 	}
 	
 }

@@ -1,179 +1,165 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.DateTimeException;
+import java.time.Month;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.apache.commons.math3.util.Precision;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Balanco;
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.Lancamento;
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoResumoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.BalancoFaixaDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoLancamentoEnum;
 import br.com.felipeduarte.APIControleFinanceiro.repository.BalancoRepository;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
 public class BalancoService {
 	
-	private static final String TIME_ZONE = "America/Sao_Paulo";
+	private Clock clock;
 	
-	@Autowired
 	private BalancoRepository repository;
 	
-	@Autowired
 	private CategoriaService categoriaService;
 	
 	@Autowired
-	private RestricaoService restricaoService;
-	
-	public List<BalancoResumoDTO> buscarTodosResumo(Long idCategoria, Integer ano, Integer mes, 
+	public BalancoService(Clock clock, BalancoRepository repository, CategoriaService categoriaService) {
+		this.clock = clock;
+		this.repository = repository;
+		this.categoriaService = categoriaService;
+	}
+
+	public List<BalancoFaixaDTO> buscarFaixas(Long idCategoria, Integer ano, Integer mes, 
 			Integer qtdMes){
 		
-		//Só aceita número Impar
-		if(qtdMes % 2 == 0) return null;
+		//Só aceita a quantidade de mes em número Impar
+		if(qtdMes % 2 == 0) throw new IllegalParameterException("Erro! quantide de mês não pode ser par!");
 		
-		Categoria categoria = this.categoriaService.buscarPorId(idCategoria);
-		
-		if(categoria == null) {
-			return null;
-		}
-		
-		//Verifica se categoria do balanço pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(categoria);
-		
-		Balanco balancoAtual = this.repository.findByCategoriaAndMesAndAno(categoria, mes, ano);
-		if(balancoAtual == null) return null;
-		
-		List<Balanco> balancos = new ArrayList<>();
-		
-		LocalDate agora = LocalDate.now();
-		
-		if(LocalDate.of(balancoAtual.getAno(), balancoAtual.getMes(),1).isEqual(
-				LocalDate.of(agora.getYear(), agora.getMonth(), 1))) { //Mês atual não tem meses depois
+		try {
 			
+			var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
 			
-			for(int i=qtdMes-1; i > 0 ; i--) {
+			var anoMes = YearMonth.of(ano, Month.of(mes));
+			
+			var optBalancoFoco = this.repository.findByCategoriaAndMesAno(categoria, anoMes);
+			
+			if(!optBalancoFoco.isPresent()) 
+				throw new IllegalParameterException(
+						"Erro! balanco não encontrado para ano e mes informado!");
+			
+			var balancos = new ArrayList<>();
+			
+			var anoMesAgora = YearMonth.now(clock.getZone());
+			
+			//O mês e ano recebido é o mês e ano atual então só tem balanços anterior a data atual
+			if(anoMes.equals(anoMesAgora)){
 				
-				LocalDate dataVez = agora.minusMonths(i);
+				var balancosIntervalo = 
+						this.repository.findByCategoriaAndMesAnoBetween(categoria,
+								anoMesAgora.minusMonths(qtdMes-1), anoMesAgora);
 				
-				Balanco balancoVez = 
-						this.repository.findByCategoriaAndMesAndAno(
-								categoria, dataVez.getMonth().getValue(), dataVez.getYear());
+				balancos.addAll(balancosIntervalo);
 				
-				if(balancoVez != null) balancos.add(balancoVez);
+			}else {				
+				//O mês e ano recebido não é o mês e ano atual então tem balanços anteriores e posteriores
 				
+				var metade = (qtdMes + 1 ) / 2;
+				
+				var balancosIntervaloAnterior = 
+						this.repository.findByCategoriaAndMesAnoBetween(categoria,
+								anoMes.minusMonths(metade-1), anoMes.minusMonths(1L));
+				
+				balancos.addAll(balancosIntervaloAnterior);
+				balancos.add(optBalancoFoco.get());
+				
+				var balancosIntervalorPosterior = 
+						this.repository.findByCategoriaAndMesAnoBetween(categoria,
+								anoMes.plusMonths(1L), anoMes.plusMonths(metade-1));
+				
+				balancos.addAll(balancosIntervalorPosterior);
+			
 			}
 			
-			balancos.add(balancoAtual);
+			return balancos.stream().map(balanco -> {
+				var balancoDTO = new BalancoFaixaDTO((Balanco) balanco);
+				var data = YearMonth.of(balancoDTO.getAno(), balancoDTO.getMes());
+				if(data.equals(anoMes)) balancoDTO.setAtual(true);
+				return balancoDTO;
+			}).collect(Collectors.toList());
 			
-		}else { //Mês não atual, existe meses pra frente e para atras
 			
-			LocalDate dataBalanco = LocalDate.of(ano, mes, 1);
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new IllegalParameterException(ex.getMessage());
 			
-			int metade = (qtdMes + 1) / 2 ;
-			
-			for(int i=metade-1; i > 0; i--) {
-				
-				LocalDate dataVez = dataBalanco.minusMonths(i);
-				
-				Balanco balancoVez = 
-						this.repository.findByCategoriaAndMesAndAno(
-								categoria, dataVez.getMonth().getValue(), dataVez.getYear());
-				
-				if(balancoVez != null) balancos.add(balancoVez);
-				
-			}
-			
-			balancos.add(balancoAtual);
-			
-			dataBalanco = LocalDate.of(ano, mes, 1);
-			
-			for(int i=1; i < metade; i++) {
-				
-				LocalDate dataVez = dataBalanco.plusMonths(i);
-				
-				Balanco balancoVez = 
-						this.repository.findByCategoriaAndMesAndAno(
-								categoria, dataVez.getMonth().getValue(), dataVez.getYear());
-				
-				if(balancoVez != null) balancos.add(balancoVez);
-				
-			}
-			
+		}catch(DateTimeException ex) {
+			throw new IllegalParameterException("Erro! mês informado é inválido!");
 			
 		}
-		
-		List<BalancoResumoDTO> balancosDTO = new ArrayList<>();
-		
-		for(Balanco b: balancos) {
-			BalancoResumoDTO bdto = BalancoResumoDTO.converteBalancoParaBalancoResumoDTO(b);
-			
-			if((bdto.getAno().equals(ano)) && (bdto.getMes().equals(mes)))
-				bdto.setAtual(true);
-			else
-				bdto.setAtual(false);
-			
-			balancosDTO.add(bdto);
-		}
-		
-		return balancosDTO;
+	
 	}
 	
-	public Balanco recuperarAtual(Long idCategoria) {
+	@Transactional(rollbackOn = Exception.class)
+	public BalancoDTO recuperarAtual(Long idCategoria) {
 		
-		Categoria categoria = this.categoriaService.buscarPorId(idCategoria);
+		var balanco = recuperarAtualInterno(idCategoria);
 		
-		if(categoria == null) {
-			return null;
-		}
-		
-		//Verifica se categoria do balanço pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(categoria);
-		
-		Balanco balanco = this.repository.findByCategoriaAndFechado(categoria, false);
-		
-		LocalDate agora = LocalDate.now(ZoneId.of(TIME_ZONE));
-		
-		//Verifica se mudou de mês - se sim solicita o cadastro do novo mês e fecha o anterior
-		if(agora.getMonthValue() != balanco.getMes()) {
-			
-			balanco.setFechado(true);
-			this.repository.save(balanco);
-			
-			Balanco novo = this.cadastrar(categoria);
-			return novo;
-		}
-		
-		return balanco;
+		return new BalancoDTO(balanco);
+	
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
+	public Balanco recuperarAtualInterno(Long idCategoria) {
+		
+		try {
+			
+			var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
+			
+			var mesAnoAgora = YearMonth.now(clock.getZone());
+			
+			var optBalanco = this.repository.findByCategoriaAndMesAno(categoria, mesAnoAgora);
+			
+			if(optBalanco.isPresent()) return optBalanco.get();
+			
+			fecharBalancoAnterior(categoria);
+			
+			var balancoNovo = cadastrar(categoria);
+			
+			return balancoNovo;
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new IllegalParameterException(ex.getMessage());
+			
+		}
+	
+	}
+	
+	@Transactional(rollbackOn = Exception.class)
 	public Balanco cadastrar(Categoria categoria) {
 		
-		LocalDate agora = LocalDate.now(ZoneId.of(TIME_ZONE));
+		var anoMesAgora = YearMonth.now(clock.getZone());
 		
-		LocalDate dataAnterior = agora.minusMonths(1);
+		var anoMesPassado = anoMesAgora.minusMonths(1L);
 		
-		Balanco balancoAnterior = this.repository.findByCategoriaAndMesAndAno(categoria, 
-				dataAnterior.getMonthValue(), dataAnterior.getYear());
+		var optBalancoMesPassado = 
+				this.repository.findByCategoriaAndMesAno(categoria, anoMesPassado);
 		
-		double saldoAnterior = 0.0;
+		var saldoAnterior = new BigDecimal("0");
 		
-		if(balancoAnterior != null) {
-			saldoAnterior = balancoAnterior.getSaldoAtual();
-		}
+		if(optBalancoMesPassado.isPresent()) 
+			saldoAnterior = saldoAnterior.add(optBalancoMesPassado.get().getSaldoAtual());
 		
-		Balanco balanco = new Balanco();
-		balanco.setId(null);
-		balanco.setMes(agora.getMonthValue());
-		balanco.setAno(agora.getYear());
-		balanco.setSaldoAnterior(saldoAnterior);
-		balanco.setSaldoAtual(saldoAnterior);
-		balanco.setFechado(false);
+		var balanco = new Balanco(null,anoMesAgora,saldoAnterior,saldoAnterior,false);
 		balanco.setCategoria(categoria);
 		
 		balanco = this.repository.save(balanco);
@@ -182,62 +168,82 @@ public class BalancoService {
 		
 	}
 	
-	public Balanco recuperarPorData(Long idCategoria, Integer mes, Integer ano) {
+	@Transactional(rollbackOn = Exception.class)
+	private void fecharBalancoAnterior(Categoria categoria) {
 		
-		Categoria categoria = this.categoriaService.buscarPorId(idCategoria);
+		var dataAtual = YearMonth.now(clock.getZone());
 		
-		if(categoria == null) {
-			return null;
+		var optBalanco = 
+				this.repository.findByCategoriaAndMesAno(
+						categoria, dataAtual.minusMonths(1L));
+		
+		if(optBalanco.isPresent()) {
+			
+			optBalanco.get().setFechado(true);
+			
+			this.repository.save(optBalanco.get());
+		
 		}
 		
-		//Verifica se categoria do balanço pertence ao usuario logado
-		this.restricaoService.verificarPermissaoConteudo(categoria);
+	}
+	
+	public BalancoDTO buscarPorData(Long idCategoria, Integer mes, Integer ano) {
 		
-		Balanco balanco = this.repository.findByCategoriaAndMesAndAno(categoria, mes, ano);
+		try {
+			
+			var categoria = this.categoriaService.buscarPorIdInterno(idCategoria);
+			
+			var mesAno = YearMonth.of(ano, Month.of(mes));
+			
+			var optBalanco = this.repository.findByCategoriaAndMesAno(categoria, mesAno);
+			
+			if(optBalanco.isEmpty()) return new BalancoDTO();
+			
+			return new BalancoDTO(optBalanco.get());
+			
+		}catch(DateTimeException ex) {
+			throw new IllegalParameterException("Erro! mês informado é inválido!");
+			
+		}catch(ObjectNotFoundFromParameterException ex) {
+			throw new IllegalParameterException(ex.getMessage());
+			
+		}
 		
-		return balanco;
 	}
 	
 	public Balanco buscarPorId(Long id) {
 		
-		Optional<Balanco> balanco = this.repository.findById(id);
+		var optBalanco = this.repository.findById(id);
 		
-		if(balanco.isEmpty()) {
-			return null;
-		}
+		if(!optBalanco.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! balanco não encontrado para o id informado!");
 		
-		return balanco.get();
+		return optBalanco.get();
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
 	public void atualizarSaldo(Balanco balanco) {
+			
+		var proventos = new BigDecimal("0");
+		var despesas = new BigDecimal("0");
 		
-		Balanco b = this.buscarPorId(balanco.getId());
-		
-		if(b != null) {
+		for(Lancamento lancamento: balanco.getLancamentos()) {
 			
-			double saldoAnterior = balanco.getSaldoAnterior();
-			double proventos = 0.00;
-			double despesas = 0.00;
+			if(lancamento.getTipo().getValor().equals(TipoLancamentoEnum.PROVENTO.getValor()))
+				proventos = proventos.add(lancamento.getValor());
 			
-			for(Lancamento l: b.getLancamentos()) {
-				
-				if(l.getTipo().getValor() == TipoLancamentoEnum.PROVENTO.getValor()) {
-					proventos += l.getValor();
-				}
-				
-				if(l.getTipo().getValor() == TipoLancamentoEnum.DESPESA.getValor()) {
-					despesas += l.getValor();
-				}
-				
-			}
-			
-			Double saldo = saldoAnterior + proventos - despesas;
-			
-			b.setSaldoAtual(Precision.round(saldo, 2)); 
-			
-			this.repository.save(b);
+			if(lancamento.getTipo().getValor().equals(TipoLancamentoEnum.DESPESA.getValor()))
+				despesas = despesas.add(lancamento.getValor());
 			
 		}
+		
+		var saldo = new BigDecimal("0").add(balanco.getSaldoAnterior())
+				.add(proventos).subtract(despesas);
+		
+		balanco.setSaldoAtual(saldo);
+		
+		this.repository.save(balanco);
 		
 	}
 	

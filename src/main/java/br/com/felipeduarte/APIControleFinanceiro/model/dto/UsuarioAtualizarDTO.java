@@ -5,27 +5,23 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class UsuarioAtualizarDTO {
 	
-	@NotNull(message = "Informe o campo id")
-	private Long id;
-	
+	@ApiModelProperty(value = "Nome do usuário")
 	@NotNull(message = "Informe o campo nome")
 	@Length(min=3, max=50, message = "O campo nome deve ter entre {min} a {max} caracteres")
 	private String nome;
 	
+	@ApiModelProperty(value = "Email do usuário")
 	@NotNull(message = "Informe o campo email")
 	@Length(max=80, message = "O campo email deve ter até {max} caracteres")
 	@Email(message = "o valor informado está fora do padrão para email")
 	private String email;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
+	
+	@ApiModelProperty(value = "Senha do usuário - deve ter entre 8 a 15 caracteres")
+	private String senha;
 
 	public String getNome() {
 		return nome;
@@ -41,6 +37,14 @@ public class UsuarioAtualizarDTO {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getSenha() {
+		return senha;
+	}
+
+	public void setSenha(String senha) {
+		this.senha = senha;
 	}
 
 }

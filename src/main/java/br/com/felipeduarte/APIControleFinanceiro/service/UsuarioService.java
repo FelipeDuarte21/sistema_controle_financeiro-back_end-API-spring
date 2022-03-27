@@ -1,144 +1,158 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
-import java.util.Optional;
+import java.util.regex.Pattern;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.enums.TipoUsuario;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.IllegalParameterException;
+import br.com.felipeduarte.APIControleFinanceiro.service.exception.ObjectNotFoundFromParameterException;
 
 @Service
 public class UsuarioService {
 	
-	@Autowired
+	private static final Pattern VALIDADOR_EMAIL = 
+		    Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+	
 	private UsuarioRepository repository;
 	
-	@Autowired
 	private BCryptPasswordEncoder bCrypt;
 	
-	@Autowired
 	private RestricaoService restricaoService;
+	
+	@Autowired
+	public UsuarioService(UsuarioRepository repository, BCryptPasswordEncoder bCrypt,
+			RestricaoService restricaoService) {
+		this.repository = repository;
+		this.bCrypt = bCrypt;
+		this.restricaoService = restricaoService;
+	}
 
-	public Usuario salvar(UsuarioSalvarDTO usuario) {
+	@Transactional(rollbackOn = Exception.class)
+	public UsuarioDTO salvar(UsuarioSalvarDTO usuarioDTO) {
 		
-		Optional<Usuario> u = this.repository.findByEmail(usuario.getEmail());
+		var optUsuarioEmail = this.repository.findByEmail(usuarioDTO.getEmail());
 		
-		if(u.isPresent()) {
-			return null;
-		}
+		if(optUsuarioEmail.isPresent()) throw new IllegalParameterException("Erro! email já está em uso!");
 		
-		Usuario usu = Usuario.converteParaUsuario(usuario);
+		var usuario = new Usuario(usuarioDTO);
+		usuario.setSenha(this.bCrypt.encode(usuarioDTO.getSenha()));
+		usuario.addTipo(TipoUsuario.USUARIO.getCodigo());
 		
-		usu.setSenha(this.bCrypt.encode(usu.getSenha()));
+		usuario = this.repository.save(usuario);
 		
-		usu.getTipo().add(TipoUsuario.USUARIO.getCodigo());
-		
-		usu = this.repository.save(usu);
-		return usu;
+		return new UsuarioDTO(usuario);
 		
 	}
 	
-	public Usuario atualizar(UsuarioAtualizarDTO usuario) {
+	@Transactional(rollbackOn = Exception.class)
+	public UsuarioDTO atualizar(Long id, UsuarioAtualizarDTO usuarioDTO) {
 		
-		if(usuario.getId() == null || usuario.getId() == 0L) {
-			return null;
-		}
-		
-		Optional<Usuario> u1 = this.repository.findById(usuario.getId());
-		
-		if(u1.isEmpty()) {
-			return null;
-		}
-		
-		//Verifica se usuario é o mesmo que está logado
-		this.restricaoService.verificarUsuario(usuario.getId());
-		
-		//Verifica se o caso o email foi alterado não esteja já cadastrado!
-		if(!usuario.getEmail().equals(u1.get().getEmail())) {
-			
-			Optional<Usuario> u2 = this.repository.findByEmail(usuario.getEmail());
-			
-			if(u2.isPresent()) {
-				return null;
-			}
-			
-		}
-		
-		Usuario usu = Usuario.converteParaUsuario(usuario);
-		usu.setSenha(u1.get().getSenha());
-		usu.getTipo().add(TipoUsuario.USUARIO.getCodigo());
-		
-		usu = this.repository.save(usu);
-		
-		return usu;
-		
-	}
-	
-	public boolean excluir(Long id) {
-		
-		Optional<Usuario> usu = this.repository.findById(id);
-		
-		if(usu.isEmpty()) {
-			return false;
-		}
+		if(id == null) throw new IllegalParameterException("Erro! id não pode ser nullo");
+		if(id == 0) throw new IllegalParameterException("Erro! id não pode ser 0");
 		
 		//Verifica se usuario é o mesmo que está logado
 		this.restricaoService.verificarUsuario(id);
 		
-		this.repository.delete(usu.get());
-		return true;
+		var optUsuario = this.repository.findById(id);
+		
+		if(!optUsuario.isPresent())
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! usuário não encontrado para o id informado!");
+		
+		//Verifica se novo email já esteja cadastrado!
+		
+		var optUsuarioEmail = this.repository.findByEmail(usuarioDTO.getEmail());
+		
+		if(optUsuarioEmail.isPresent() && !optUsuarioEmail.get().getId().equals(optUsuario.get().getId()) )
+			throw new IllegalParameterException("Erro! email já está em uso!");
+		
+		
+		var usuario = optUsuario.get();
+		usuario.setNome(usuarioDTO.getNome());
+		usuario.setEmail(usuarioDTO.getEmail());
+		
+		if(!usuarioDTO.getSenha().isEmpty()) {
+			
+			var senha = usuarioDTO.getSenha();
+			
+			if(senha.length() < 8 || senha.length() > 15)
+				throw new IllegalParameterException("Erro! O campo senha deve ter entre 8 a 15 caracteres");
+			
+			usuario.setSenha(bCrypt.encode(usuarioDTO.getSenha()));
+			
+		}
+		
+		usuario = this.repository.save(usuario);
+		
+		return new UsuarioDTO(usuario);
+		
 	}
 	
-	public Usuario buscarPorId(Long id) {
+	@Transactional(rollbackOn = Exception.class)
+	public void excluir(Long id) {
 		
-		Optional<Usuario> usuario =  this.repository.findById(id);
+		var optUsuario = this.repository.findById(id);
 		
-		if(usuario.isEmpty()) {
-			return null;
-		}
+		//Verifica se usuario é o mesmo que está logado
+		this.restricaoService.verificarUsuario(id);
 		
-		return usuario.get();
+		if(!optUsuario.isPresent())
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! usuário não encontrado para o id informado!");
+		
+		this.repository.delete(optUsuario.get());
 		
 	}
 	
-	public Usuario buscarPorEmail(String email,boolean verificaUsuarioLogado) {
+	public UsuarioDTO buscarPorId(Long id) {
 		
-		Optional<Usuario> usuario = this.repository.findByEmail(email);
+		var optUsuario =  this.repository.findById(id);
 		
-		if(usuario.isEmpty()) {
-			return null;
-		}
+		if(!optUsuario.isPresent()) 
+			throw new ObjectNotFoundFromParameterException("Erro! usuario não encontrado para id informado!");
 		
-		if(verificaUsuarioLogado) {
-			this.restricaoService.verificarUsuario(usuario.get().getId());
-		}
+		//Verifica se usuario é o mesmo que está logado
+		this.restricaoService.verificarUsuario(optUsuario.get().getId());
 		
-		return usuario.get();
+		return new UsuarioDTO(optUsuario.get());
+		
 	}
 	
-	public Page<Usuario> listar(Integer page, Integer size, Integer order){
+	public UsuarioDTO buscarPorEmail(String email,boolean verificaUsuarioLogado) {
 		
-		Direction d = Direction.ASC;
+		if(!VALIDADOR_EMAIL.matcher(email).find())
+			throw new IllegalParameterException("Erro! o email está fora do padrão!");
 		
-		if(order == 1) {
-			d = Direction.ASC;
-		}else if(order == 2) {
-			d = Direction.DESC;
-		}
+		var optUsuario = this.repository.findByEmail(email);
 		
-		PageRequest pageable = PageRequest.of(page, size, d, "nome");
+		if(!optUsuario.isPresent()) 
+			throw new ObjectNotFoundFromParameterException(
+					"Erro! usuario não encontrado para o email informado!");
 		
-		Page<Usuario> usuarios = this.repository.findAll(pageable);
+		if(verificaUsuarioLogado) 
+			this.restricaoService.verificarUsuario(optUsuario.get().getId());
 		
-		return usuarios;
+		return new UsuarioDTO(optUsuario.get());
+		
+	}
+	
+	public Page<UsuarioDTO> listar(Pageable paginacao){
+		
+		var pageUsuarios = this.repository.findAll(paginacao);
+		
+		return pageUsuarios.map(UsuarioDTO::new);
 		
 	}
 	

@@ -1,11 +1,14 @@
 package br.com.felipeduarte.APIControleFinanceiro.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -16,7 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import br.com.felipeduarte.APIControleFinanceiro.converters.YearMonthConverter;
 
 @Entity
 @Table(name = "balanco")
@@ -28,14 +31,15 @@ public class Balanco implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private Integer mes;
-	private Integer ano;
+	@Convert(converter = YearMonthConverter.class)
+	@Column(name = "mes_ano")
+	private YearMonth mesAno;
 	
 	@Column(name = "saldo_anterior")
-	private Double saldoAnterior;
+	private BigDecimal saldoAnterior;
 	
 	@Column(name = "saldo_atual")
-	private Double saldoAtual;
+	private BigDecimal saldoAtual;
 	
 	private Boolean fechado;
 	
@@ -43,12 +47,20 @@ public class Balanco implements Serializable{
 	@JoinColumn(name = "id_categoria")
 	private Categoria categoria;
 	
-	@JsonIgnore
 	@OneToMany(mappedBy = "balanco", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Lancamento> lancamentos = new ArrayList<>();
 	
 	public Balanco() {
 		
+	}
+
+	public Balanco(Long id, YearMonth mesAno, BigDecimal saldoAnterior, BigDecimal saldoAtual, 
+			Boolean fechado) {
+		this.id = id;
+		this.mesAno = mesAno;
+		this.saldoAnterior = saldoAnterior;
+		this.saldoAtual = saldoAtual;
+		this.fechado = fechado;
 	}
 
 	public Long getId() {
@@ -59,35 +71,27 @@ public class Balanco implements Serializable{
 		this.id = id;
 	}
 
-	public Integer getMes() {
-		return mes;
+	public YearMonth getMesAno() {
+		return mesAno;
 	}
 
-	public void setMes(Integer mes) {
-		this.mes = mes;
+	public void setMesAno(YearMonth mesAno) {
+		this.mesAno = mesAno;
 	}
 
-	public Integer getAno() {
-		return ano;
-	}
-
-	public void setAno(Integer ano) {
-		this.ano = ano;
-	}
-
-	public Double getSaldoAnterior() {
+	public BigDecimal getSaldoAnterior() {
 		return saldoAnterior;
 	}
 
-	public void setSaldoAnterior(Double saldoAnterior) {
+	public void setSaldoAnterior(BigDecimal saldoAnterior) {
 		this.saldoAnterior = saldoAnterior;
 	}
 
-	public Double getSaldoAtual() {
+	public BigDecimal getSaldoAtual() {
 		return saldoAtual;
 	}
 
-	public void setSaldoAtual(Double saldoAtual) {
+	public void setSaldoAtual(BigDecimal saldoAtual) {
 		this.saldoAtual = saldoAtual;
 	}
 
@@ -117,6 +121,10 @@ public class Balanco implements Serializable{
 	
 	public void rmvLancamento(Lancamento lancamento) {
 		this.lancamentos.remove(lancamento);
+	}
+	
+	public void addLancamento(Lancamento lancamento) {
+		this.lancamentos.add(lancamento);
 	}
 
 	@Override

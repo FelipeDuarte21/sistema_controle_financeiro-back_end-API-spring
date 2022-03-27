@@ -1,6 +1,7 @@
 package br.com.felipeduarte.APIControleFinanceiro.service;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,66 +9,66 @@ import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
 import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
+import br.com.felipeduarte.APIControleFinanceiro.repository.CategoriaRepository;
+import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
+import br.com.felipeduarte.APIControleFinanceiro.security.UsuarioDetalhe;
 
 @Service
 public class RestricaoService {
 	
-	@Autowired
-	private UsuarioService usuarioService;
+	private CategoriaRepository categoriaRepository;
+	
+	private UsuarioRepository usuarioRepository;
 	
 	@Autowired
-	private CategoriaService categoriaService;
+	public RestricaoService(UsuarioRepository usuarioRepository,CategoriaRepository categoriaRepository) {
+		this.categoriaRepository = categoriaRepository;
+		this.usuarioRepository = usuarioRepository;
+	}
 	
-	private Usuario getUsuarioLogado() {
+	private Optional<Usuario> getUsuarioLogado() {
 		try {
-			String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			Usuario usuario = this.usuarioService.buscarPorEmail(email,false);
-			return usuario;
+			var usuarioDetalhe = (UsuarioDetalhe) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			var usuario = this.usuarioRepository.findByEmail(usuarioDetalhe.getUsername()).get();
+			return Optional.of(usuario);
 			
 		}catch(Exception e) {
-			return null;
+			return Optional.empty();
 		}
 	}
 	
 	public Usuario getUsuario() {
 		
-		Usuario usuario = this.getUsuarioLogado();
+		var optUsuario = this.getUsuarioLogado();
 		
-		if(usuario == null) throw new AuthorizationException("Usuário não logado");
+		if(!optUsuario.isPresent()) throw new AuthorizationException("Erro! Usuário não está logado!");
 		
-		return usuario;
+		return optUsuario.get();
+		
 	}
 	
 	public void verificarPermissaoConteudo(Categoria categoria) {
 		
-		Usuario usuario = this.getUsuario();
+		var usuario = this.getUsuario();
 		
-		boolean resp = false;
+		var categorias = this.categoriaRepository.findByUsuario(usuario);
 		
-		List<Categoria> categorias = this.categoriaService.buscarPorUsuario(usuario);
+		if(categorias.isEmpty()) throw new AuthorizationException("Acesso Indevido!");
+			
+		var categoriaEncontrada = 
+				categorias.stream().filter(cat -> cat.getId().equals(categoria.getId()))
+					.collect(Collectors.toList());
 		
-		if(categorias != null) {
-			for(Categoria cat: categorias) {
-				if(cat.getId().equals(categoria.getId())) {
-					resp = true;
-					break;
-				}
-			}
-		}
+		if(categoriaEncontrada.isEmpty()) throw new AuthorizationException("Acesso Indevido!");
 		
-		if(resp == false) {
-			throw new AuthorizationException("Acesso Indevido!");
-		}
 	}
 	
 	public void verificarUsuario(Long idComparado) {
 		
-		Usuario usuario = this.getUsuario();
+		var usuario = this.getUsuario();
 		
-		if(!usuario.getId().equals(idComparado)) {
-			throw new AuthorizationException("Acesso Indevido!");
-		}
+		if(!usuario.getId().equals(idComparado)) throw new AuthorizationException("Acesso Indevido!");
 		
 	}
 

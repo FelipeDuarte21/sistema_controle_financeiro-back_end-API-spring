@@ -2,21 +2,43 @@ package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
 import java.time.LocalDate;
 
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-import org.hibernate.validator.constraints.Length;
+import br.com.felipeduarte.APIControleFinanceiro.model.Categoria;
+import io.swagger.annotations.ApiModelProperty;
 
 public class CategoriaDTO {
 	
+	@ApiModelProperty(value = "Identificação da categoria")
 	private Long id;
 	
-	@NotNull(message = "Informe o campo nome")
-	@Length(min=3,max=60, message = "O campo nome deve ter entre {min} e {max} caracteres")
+	@ApiModelProperty(value = "Nome da categoria")
 	private String nome;
 	
+	@ApiModelProperty(value = "Descrição da categoria")
 	private String descricao;
 	
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	@ApiModelProperty(value = "Data de cadastro da categoria")
 	private LocalDate dataCadastro;
+	
+	public CategoriaDTO() {
+		
+	}
+
+	public CategoriaDTO(Long id, String nome, String descricao, LocalDate dataCadastro) {
+		this.id = id;
+		this.nome = nome;
+		this.descricao = descricao;
+		this.dataCadastro = dataCadastro;
+	}
+
+	public CategoriaDTO(Categoria categoria) {
+		this.id = categoria.getId();
+		this.nome = categoria.getNome();
+		this.descricao = categoria.getDescricao();
+		this.dataCadastro = categoria.getDataCadastro();
+	}
 
 	public Long getId() {
 		return id;

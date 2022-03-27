@@ -29,4 +29,19 @@ public enum TipoLancamentoEnum {
 		this.nome = nome;
 	}
 	
+	public static TipoLancamentoEnum toEnum(Integer valor) {
+		
+		if(valor == null) {
+			return null;
+		}
+		
+		for(TipoLancamentoEnum x: TipoLancamentoEnum.values()) {
+			if(valor.equals(x.getValor())) {
+				return x;
+			}
+		}
+		
+		throw new IllegalArgumentException("Tipo de Lancamento Inválido!");
+	}
+	
 }

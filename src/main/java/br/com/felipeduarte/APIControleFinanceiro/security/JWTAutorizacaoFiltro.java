@@ -7,59 +7,54 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-public class JWTAutorizacaoFiltro extends BasicAuthenticationFilter{
+public class JWTAutorizacaoFiltro extends OncePerRequestFilter{
 	
 	private JWTUtil jwtUtil;
 	
 	private UsuarioDetalheService usuarioDetalheService;
 	
 
-	public JWTAutorizacaoFiltro(AuthenticationManager authenticationManager, JWTUtil jwtUtil,
-			UsuarioDetalheService usuarioDetalheService) {
-		super(authenticationManager);
+	public JWTAutorizacaoFiltro(JWTUtil jwtUtil, UsuarioDetalheService usuarioDetalheService) {
 		this.jwtUtil = jwtUtil;
 		this.usuarioDetalheService = usuarioDetalheService;
 	}
-	
+
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 		
-		String header = request.getHeader("Authorization");
+		String token = recuperaToken(request);
 		
-		if(header != null && header.startsWith("Bearer ")) {
-			UsernamePasswordAuthenticationToken auth = this.getAuthentication(header.substring(7));
-			
-			if(auth != null) {
-				SecurityContextHolder.getContext().setAuthentication(auth);
-			}
-			
+		boolean valido = jwtUtil.validarToken(token);
+		
+		if(valido) {
+			autenticarUsuario(token);
 		}
 		
-		chain.doFilter(request, response);
+		filterChain.doFilter(request, response);
+		
 	}
 	
-	private UsernamePasswordAuthenticationToken getAuthentication(String token) {
+	private String recuperaToken(HttpServletRequest request) {
+		String token = request.getHeader("Authorization");
 		
-		String usuarioEmail = this.jwtUtil.validarToken(token);
-		
-		if(usuarioEmail == null) return null;
-		
-		try {
-			UsuarioDetalhe usuario = (UsuarioDetalhe) this.usuarioDetalheService.loadUserByUsername(usuarioEmail);
-			return new UsernamePasswordAuthenticationToken(usuarioEmail,null,usuario.getAuthorities());
-		
-		}catch(UsernameNotFoundException e) {
+		if(token == null || token.isEmpty() || !token.startsWith("Bearer")) {
 			return null;
 		}
 		
+		return token.substring(7,token.length());
 	}
-	
+
+	private void autenticarUsuario(String token) {
+		Long idUsuario = jwtUtil.getIdUsuario(token);
+		UsuarioDetalhe usuario = (UsuarioDetalhe) usuarioDetalheService.loadUserById(idUsuario);
+		UsernamePasswordAuthenticationToken authentication = 
+				new UsernamePasswordAuthenticationToken(usuario,null, usuario.getAuthorities());
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
 	
 }

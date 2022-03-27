@@ -17,9 +17,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioAtualizarDTO;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.UsuarioSalvarDTO;
 
 @Entity
@@ -36,14 +33,11 @@ public class Usuario implements Serializable{
 	
 	private String email;
 	
-	@JsonIgnore
 	private String senha;
 	
-	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
 	private List<Categoria> categorias = new ArrayList<>();
 	
-	@JsonIgnore
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "tipo_usuario")
 	private Set<Integer> tipo = new HashSet<>();
@@ -51,6 +45,19 @@ public class Usuario implements Serializable{
 	public Usuario() {
 		
 	}
+
+	public Usuario(Long id, String nome, String email, String senha) {
+		this.id = id;
+		this.nome = nome;
+		this.email = email;
+		this.senha = senha;
+	}
+	
+	public Usuario(UsuarioSalvarDTO usuarioDTO) {
+		this.nome = usuarioDTO.getNome();
+		this.email = usuarioDTO.getEmail();
+		this.senha = usuarioDTO.getSenha();
+ 	}
 
 	public Long getId() {
 		return id;
@@ -99,6 +106,10 @@ public class Usuario implements Serializable{
 	public void setTipo(Set<Integer> tipo) {
 		this.tipo = tipo;
 	}
+	
+	public void addTipo(Integer tipo) {
+		this.tipo.add(tipo);
+	}
 
 	@Override
 	public int hashCode() {
@@ -123,22 +134,6 @@ public class Usuario implements Serializable{
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
-	}
-	
-	public static Usuario converteParaUsuario(UsuarioSalvarDTO usuario) {
-		Usuario usu = new Usuario();
-		usu.setNome(usuario.getNome());
-		usu.setEmail(usuario.getEmail());
-		usu.setSenha(usuario.getSenha());
-		return usu;
-	}
-	
-	public static Usuario converteParaUsuario(UsuarioAtualizarDTO usuario) {
-		Usuario usu = new Usuario();
-		usu.setId(usuario.getId());
-		usu.setNome(usuario.getNome());
-		usu.setEmail(usuario.getEmail());
-		return usu;
 	}
 	
 }

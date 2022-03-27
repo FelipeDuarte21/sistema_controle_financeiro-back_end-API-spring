@@ -2,9 +2,14 @@ package br.com.felipeduarte.APIControleFinanceiro.model.dto;
 
 import org.springframework.core.io.InputStreamResource;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class ArquivoDTO {
 	
+	@ApiModelProperty(value = "Nome do arquivo")
 	private String nomeArquivo;
+	
+	@ApiModelProperty(value = "Arquivo")
 	private InputStreamResource arquivo;
 	
 	public String getNomeArquivo() {
