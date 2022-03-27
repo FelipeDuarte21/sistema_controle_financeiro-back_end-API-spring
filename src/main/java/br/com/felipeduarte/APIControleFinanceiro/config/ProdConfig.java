@@ -10,7 +10,7 @@ import br.com.felipeduarte.APIControleFinanceiro.email.SmtpEmailService;
 @Configuration
 @Profile("prod")
 public class ProdConfig {
-	
+
 	@Bean
 	public EmailService emailService() {
 		return new SmtpEmailService();
