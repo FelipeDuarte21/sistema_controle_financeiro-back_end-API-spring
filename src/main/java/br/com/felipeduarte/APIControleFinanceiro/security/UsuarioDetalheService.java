@@ -30,10 +30,21 @@ public class UsuarioDetalheService implements UserDetailsService {
 		
 	}
 	
+	public UserDetails loadUserById(Long id) throws UsernameNotFoundException {
+		
+		Optional<Usuario> usuario = this.usuarioRepository.findById(id);
+		
+		if(usuario.isEmpty()) throw new UsernameNotFoundException(id.toString());
+		
+		return new UsuarioDetalhe(usuario.get().getId(),usuario.get().getEmail(),
+				usuario.get().getSenha(),usuario.get().getTipo());
+		
+	}
+	
 	public Optional<UsuarioDetalhe> getUsuarioAutenticado() throws Exception {
 		try {
-			var email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			var usuario = this.usuarioRepository.findByEmail(email).get();
+			var usuarioDetalhe = (UsuarioDetalhe) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			var usuario = this.usuarioRepository.findByEmail(usuarioDetalhe.getUsername()).get();
 			return Optional.of(new UsuarioDetalhe(usuario));
 			
 		}catch(Exception e) {

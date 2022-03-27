@@ -12,6 +12,7 @@ import br.com.felipeduarte.APIControleFinanceiro.model.Usuario;
 import br.com.felipeduarte.APIControleFinanceiro.repository.CategoriaRepository;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
+import br.com.felipeduarte.APIControleFinanceiro.security.UsuarioDetalhe;
 
 @Service
 public class RestricaoService {
@@ -28,8 +29,8 @@ public class RestricaoService {
 	
 	private Optional<Usuario> getUsuarioLogado() {
 		try {
-			var email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			var usuario = this.usuarioRepository.findByEmail(email).get();
+			var usuarioDetalhe = (UsuarioDetalhe) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			var usuario = this.usuarioRepository.findByEmail(usuarioDetalhe.getUsername()).get();
 			return Optional.of(usuario);
 			
 		}catch(Exception e) {

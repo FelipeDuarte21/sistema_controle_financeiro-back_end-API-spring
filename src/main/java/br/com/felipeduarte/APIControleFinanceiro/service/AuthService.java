@@ -6,11 +6,17 @@ import java.util.Random;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.felipeduarte.APIControleFinanceiro.email.EmailService;
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.EmailDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LoginDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.TokenDTO;
 import br.com.felipeduarte.APIControleFinanceiro.repository.UsuarioRepository;
 import br.com.felipeduarte.APIControleFinanceiro.security.JWTUtil;
 import br.com.felipeduarte.APIControleFinanceiro.security.UsuarioDetalhe;
@@ -25,24 +31,47 @@ public class AuthService {
 	private UsuarioRepository usuarioRepository;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 	private EmailService emailService;
+	private AuthenticationManager authManager;
 	
 	private Random rand = new Random();
 	
 	@Autowired
 	public AuthService(UsuarioDetalheService usuarioDetalheService, JWTUtil jwtUtil,
 			UsuarioRepository usuarioRepository,BCryptPasswordEncoder bCryptPasswordEncoder,
-			EmailService emailService) {
+			EmailService emailService,AuthenticationManager authManager) {
 		this.usuarioDetalheService = usuarioDetalheService;
 		this.jwtUtil = jwtUtil;
 		this.usuarioRepository = usuarioRepository;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 		this.emailService = emailService;
+		this.authManager = authManager;
 	}
 	
-	public String refreshToken() throws Exception {
+	public TokenDTO login(LoginDTO login) {
+		
+		UsernamePasswordAuthenticationToken dadosLogin = login.converter();
+		
+		try {
+			
+			Authentication authentication = authManager.authenticate(dadosLogin);
+			
+			var usuario = (UsuarioDetalhe) authentication.getPrincipal();
+			
+			String token = this.jwtUtil.geradorToken(usuario);
+			
+			return new TokenDTO(token, "Bearer");
+			
+		}catch(AuthenticationException ex) {
+			throw new IllegalParameterException("Erro! email e/ou senha incorretos!");
+			
+		}
+		
+	}
+	
+	public TokenDTO refreshToken() throws Exception {
 		Optional<UsuarioDetalhe> optUsuario = this.usuarioDetalheService.getUsuarioAutenticado();
 		String token = this.jwtUtil.geradorToken(optUsuario.get());
-		return token;
+		return new TokenDTO(token,"Bearer");
 	}
 	
 	@Transactional(rollbackOn = Exception.class)

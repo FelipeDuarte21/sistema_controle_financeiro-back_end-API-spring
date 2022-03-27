@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.TokenExpiredException;
 
 @Component
 public class JWTUtil {
@@ -21,7 +20,7 @@ public class JWTUtil {
 	public String geradorToken(UsuarioDetalhe usuario) {
 		
 		String token = JWT.create()
-				.withSubject(usuario.getUsername())
+				.withSubject(usuario.getId().toString())
 				.withExpiresAt(new Date(System.currentTimeMillis() + this.tempoExpiracao))
 				.sign(Algorithm.HMAC512(this.assinatura));
 		
@@ -29,16 +28,31 @@ public class JWTUtil {
 		return token;
 	}
 	
-	public String validarToken(String token) {
+	public boolean validarToken(String token) {
 		
 		try {
-			String usuario = JWT.require(Algorithm.HMAC512(this.assinatura))
+			JWT.require(Algorithm.HMAC512(this.assinatura)).build().verify(token);
+			
+			return true;
+			
+		}catch(Exception ex) {
+			return false;
+			
+		}
+		
+	}
+	
+	public Long getIdUsuario(String token) {
+		
+		try {
+			String id = JWT.require(Algorithm.HMAC512(this.assinatura))
 					.build().verify(token).getSubject();
 			
-			return usuario;
+			return Long.parseLong(id);
 			
-		}catch(TokenExpiredException e) {
+		}catch(Exception ex) {
 			return null;
+			
 		}
 		
 	}

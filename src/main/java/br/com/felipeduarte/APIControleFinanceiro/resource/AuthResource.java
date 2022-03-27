@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.felipeduarte.APIControleFinanceiro.model.dto.EmailDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.LoginDTO;
+import br.com.felipeduarte.APIControleFinanceiro.model.dto.TokenDTO;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.AuthorizationException;
 import br.com.felipeduarte.APIControleFinanceiro.resource.exception.ObjectBadRequestException;
 import br.com.felipeduarte.APIControleFinanceiro.service.AuthService;
@@ -30,20 +32,40 @@ public class AuthResource {
 		this.authService = authService;
 	}
 	
-	@ApiOperation(value = "Refresh do token de acesso")
+	@ApiOperation(value = "Obter o token de acesso")
 	@ApiResponses(value = {
-			@ApiResponse(code = 204, message = "Token novo gerado com sucesso"),
-			@ApiResponse(code = 403, message = "Acesso negado")
+			@ApiResponse(code = 200, message = "Token retornado com sucesso"),
+			@ApiResponse(code = 400, message = "Login e/ou senha estão errados")
 	})
-	@PostMapping(value = "/refresh-token")
-	public ResponseEntity<Void> refreshToken(HttpServletResponse response){
+	@PostMapping("/login")
+	public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginDTO login){
 		
 		try {
 			
-			String token = this.authService.refreshToken();
-			response.addHeader("Authorization","Bearer " + token);
+			var token = this.authService.login(login);
 			
-			return ResponseEntity.noContent().build();
+			return ResponseEntity.ok(token);
+			
+		}catch(IllegalParameterException ex) {
+			throw new ObjectBadRequestException(ex.getMessage());
+			
+		}
+		
+	}
+	
+	@ApiOperation(value = "Refresh do token de acesso")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Token novo gerado com sucesso"),
+			@ApiResponse(code = 403, message = "Acesso negado")
+	})
+	@PostMapping(value = "/refresh-token")
+	public ResponseEntity<TokenDTO> refreshToken(HttpServletResponse response){
+		
+		try {
+			
+			TokenDTO token = this.authService.refreshToken();
+			
+			return ResponseEntity.ok(token);
 			
 		}catch(Exception ex) {
 			throw new AuthorizationException(ex.getMessage());
@@ -54,7 +76,7 @@ public class AuthResource {
 	
 	@ApiOperation(value = "Reset de senha do usuario")
 	@ApiResponses(value = {
-			@ApiResponse(code = 204, message = "Nova senha gerada com sucesso"),
+			@ApiResponse(code = 200, message = "Nova senha gerada com sucesso"),
 			@ApiResponse(code = 400, message = "Usuario não encontrado para email informado")
 	})
 	@PostMapping(value = "/reset-senha")
