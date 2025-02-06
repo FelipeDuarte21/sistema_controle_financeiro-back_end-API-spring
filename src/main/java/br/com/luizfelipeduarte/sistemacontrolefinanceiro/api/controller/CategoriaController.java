@@ -23,6 +23,7 @@ import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.controller.exceptio
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.CategoriaDTO;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.CategoriaDadosDTO;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.CategoriaPorcentagemDTO;
+import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.PorcentagemDTO;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.service.CategoriaService;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.service.exception.IllegalParameterException;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.service.exception.ObjectNotFoundFromParameterException;
@@ -128,11 +129,11 @@ public class CategoriaController {
 	}
 	
 	@PatchMapping(value = "/porcentagem")
-	public ResponseEntity<List<CategoriaDTO>> atualizarPorcentagens(@RequestBody @Valid List<CategoriaPorcentagemDTO> categoriasPorcentagemDTO){
+	public ResponseEntity<List<CategoriaDTO>> atualizarPorcentagens(@RequestBody @Valid PorcentagemDTO porcentagem){
 		
 		try {
 			
-			List<CategoriaDTO> categorias = this.service.atualizarPorcentagem(categoriasPorcentagemDTO);
+			List<CategoriaDTO> categorias = this.service.atualizarPorcentagem(porcentagem);
 			
 			return ResponseEntity.ok(categorias);
 			
@@ -140,7 +141,6 @@ public class CategoriaController {
 			throw new ObjectBadRequestException(ex.getMessage());
 			
 		}
-		
 		
 	}
 	

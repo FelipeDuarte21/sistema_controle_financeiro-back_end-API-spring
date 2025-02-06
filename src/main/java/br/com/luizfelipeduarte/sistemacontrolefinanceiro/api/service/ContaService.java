@@ -46,5 +46,18 @@ public class ContaService {
 		return optConta.get();
 		
 	}
+
+	public void atualizarRendaMensal(Long id, BigDecimal rendaMensal){
+
+		Optional<Conta> optConta = this.repository.findById(id);
+
+		if(optConta.isEmpty()) throw new IllegalParameterException("Erro! conta não encontrada!!");
+
+		Conta conta = optConta.get();
+		conta.setRendaMensalTotal(rendaMensal);
+
+		this.repository.save(conta);
+
+	}
 	
 }

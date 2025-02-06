@@ -18,7 +18,7 @@ import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.Conta;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.CategoriaDTO;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.CategoriaDadosDTO;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.CategoriaPersonalizadaDTO;
-import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.CategoriaPorcentagemDTO;
+import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.entidade.dto.PorcentagemDTO;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.repository.CategoriaRepository;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.service.exception.IllegalParameterException;
 import br.com.luizfelipeduarte.sistemacontrolefinanceiro.api.service.exception.ObjectNotFoundFromParameterException;
@@ -170,15 +170,15 @@ public class CategoriaService {
 	}
 
 	@Transactional(rollbackOn = Exception.class)
-	public List<CategoriaDTO> atualizarPorcentagem(List<CategoriaPorcentagemDTO> categoriasPorcentagemDTO) {
+	public List<CategoriaDTO> atualizarPorcentagem(PorcentagemDTO porcentagem) {
 		
-		if(categoriasPorcentagemDTO.stream().mapToDouble(c -> c.getPorcentagem()).sum() != 100.0) {
+		if(porcentagem.getCategorias().stream().mapToDouble(c -> c.getPorcentagem()).sum() != 100.0) {
 			throw new IllegalParameterException("Erro! Porcentagem não é igual a 100%");
 		}
 		
 		var categorias = new ArrayList<Categoria>();
 		
-		categoriasPorcentagemDTO.forEach(categoriaPorcentagemDTO -> {
+		porcentagem.getCategorias().forEach(categoriaPorcentagemDTO -> {
 			
 			
 			var categoria = buscarPorIdInterno(categoriaPorcentagemDTO.getId());
@@ -191,6 +191,8 @@ public class CategoriaService {
 			
 			
 		});
+
+		this.contaService.atualizarRendaMensal(porcentagem.getIdConta(), porcentagem.getRendaMensal());
 		
 		return categorias.stream().map(CategoriaDTO::new).collect(Collectors.toList());
 		
